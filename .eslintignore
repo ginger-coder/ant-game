@@ -1,0 +1,8 @@
+.vscode
+.idea
+.local
+index.html
+.env.*
+/node_modules/
+/public/
+/dist/

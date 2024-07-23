@@ -1,0 +1,52 @@
+{
+	"typescript.preferences.quoteStyle": "single",
+	"javascript.preferences.quoteStyle": "single",
+	"files.autoSave": "onWindowChange",
+	"files.autoSaveDelay": 2000,
+	// tab 大小为2个空格
+	"editor.tabSize": 4,
+	// 保存时格式化
+	"editor.formatOnSave": true,
+	// 编辑器换行
+	"editor.wordWrap": "off",
+	// //让函数(名)和后面的括号之间加个空格
+	"javascript.format.insertSpaceBeforeFunctionParenthesis": true,
+	// 开启 vscode 文件路径导航
+	"breadcrumbs.enabled": true,
+	// 选择 vue 文件中 template 的格式化工具
+	"vetur.format.defaultFormatter.html": "js-beautify-html",
+	// 让vue中的js按编辑器自带的ts格式进行格式化
+	"vetur.format.defaultFormatter.js": "prettier",
+	"vetur.format.defaultFormatter.scss": "prettier",
+	"vetur.format.defaultFormatter.css": "prettier",
+  // 每次保存的时候将代码按eslint格式进行修复
+    "eslint.codeActionsOnSave": {
+        "source.fixAll.eslint": true,
+        "source.organizeImports": true
+    },
+    // 添加vue支持
+    "eslint.validate": [
+        "javascript",
+        "javascriptreact",
+        "vue",
+    ],
+ // #让prettier使用eslint的代码格式进行校验 
+    "prettier.eslintIntegration": true,
+	// vetur 的自定义设置
+	"vetur.format.defaultFormatterOptions": {
+		"js-beautify-html": {
+			"wrap_line_length": 120,
+			"wrap_attributes": "auto", //"force-aligned" //属性强制折行对齐
+			"end_with_newline": false
+		},
+		"prettier": {
+			"singleQuote": true,
+			"semi": false,
+			"printWidth": 100,
+			"wrapAttributes": false,
+			"sortAttributes": false,
+			"trailingComma": "none"
+		}
+	},
+	"vue.codeActions.enabled": false
+}
