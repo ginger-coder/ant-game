@@ -1,0 +1,196 @@
+<!--
+  功能：选择关卡对话框
+  作者：bianxiaokai
+  时间：2024年07月24日 14:04:26
+-->
+<template>
+    <van-dialog v-model:show="visible" :show-confirm-button="false" :close-on-click-overlay="true">
+        <div class="select-level-box">
+            <div class="select-level-content">
+                <div class="level-grade-box">
+                    <div class="level-grade-icon m5">
+                        <img src="@/assets/images/icon-point.png" alt="" />
+                    </div>
+                    <van-popover
+                        v-model:show="showGrade"
+                        :actions="gradeList"
+                        @select="handleGrade"
+                    >
+                        <template #reference>
+                            <div class="select-item m5">{{ activeGrade.text }}</div>
+                        </template>
+                    </van-popover>
+                    <div class="level-grade-icon m5">
+                        <img src="@/assets/images/icon-star.png" alt="" />
+                    </div>
+                    <van-popover
+                        v-model:show="showLevel"
+                        :actions="levelList"
+                        @select="handleLevel"
+                    >
+                        <template #reference>
+                            <div class="select-item">{{ activeLevel.text }}</div>
+                        </template>
+                    </van-popover>
+                </div>
+                <div class="level-tip">
+                    选择合适的偏旁和部首，组成一个汉字进行消除，加油！胜利在等着你
+                </div>
+                <!-- 关卡列表 -->
+                <div class="level-list-box">
+                    <div v-for="item in level_number" :key="item" class="level-item">
+                        <img :src="getAssetsFile(`icon-level-${item}.png`)" alt="" />
+                    </div>
+                </div>
+            </div>
+            <div class="level-game-start">
+                <img src="@/assets/images/icon-btn-start.png" alt="" />
+            </div>
+        </div>
+    </van-dialog>
+</template>
+
+<script setup>
+import { ref, reactive, onMounted } from 'vue';
+import { useAppStore } from '@/store';
+import { useRoute, useRouter } from 'vue-router';
+import { getAssetsFile } from '@/utils';
+defineProps({});
+/**
+ * 仓库
+ */
+const store = useAppStore();
+/**
+ * 路由对象
+ */
+const route = useRoute();
+/**
+ * 路由实例
+ */
+const router = useRouter();
+
+const activeGrade = ref({
+    id: 1,
+    text: '一年级'
+});
+const showGrade = ref(false);
+const gradeList = [
+    { text: '一年级', id: 1 },
+    { text: '二年级', id: 2 },
+    { text: '三年级', id: 3 }
+];
+
+const activeLevel = ref({
+    id: 1,
+    text: '简单'
+});
+const showLevel = ref(false);
+const levelList = [
+    { text: '简单', id: 1 },
+    { text: '中等', id: 2 },
+    { text: '困难', id: 3 }
+];
+
+const level_number = ref([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+const visible = ref(false);
+
+const handleLevel = (actions, index) => {
+    console.log('actions', actions, index);
+    activeLevel.value = actions;
+};
+const handleGrade = (actions, index) => {
+    activeGrade.value = actions;
+};
+
+const init = () => {
+    visible.value = true;
+};
+
+defineExpose({ init });
+</script>
+<style scoped lang="scss">
+.select-level-box {
+    width: 311px;
+    .select-level-content {
+        width: 100%;
+        height: 482px;
+        background: url('@/assets/images/icon-level-bg.png') no-repeat;
+        background-size: 100% 100%;
+        margin-bottom: 63px;
+        padding: 107px 48px 0 48px;
+    }
+    .level-grade-box {
+        display: flex;
+        width: 215px;
+        height: 58px;
+        background: #c45d08;
+        box-shadow: inset 0px 1px 3px 0px rgba(189, 88, 29, 0.95);
+        border-radius: 8px;
+        align-items: center;
+        justify-content: center;
+        .level-grade-icon {
+            width: 24px;
+            height: 24px;
+            img {
+                width: 100%;
+            }
+        }
+    }
+    .level-tip {
+        text-align: center;
+        font-weight: 500;
+        font-size: 11px;
+        color: #b3571f;
+        padding: 12px 0 15px;
+    }
+}
+
+.select-item {
+    width: 62px;
+    height: 26px;
+    background: #fcfbf5;
+    box-shadow: inset -1px -1px 0px 0px #edc495;
+    border-radius: 11px;
+    font-weight: 600;
+    font-size: 12px;
+    color: #af6400;
+    padding: 0 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    &::after {
+        content: '';
+        width: 4px;
+        height: 7px;
+        background: url('@/assets/images/icon-level-select.png') no-repeat;
+        background-size: 100% 100%;
+    }
+}
+
+.level-list-box {
+    display: flex;
+    flex-flow: wrap;
+    justify-content: space-around;
+    .level-item {
+        width: 48px;
+        height: 55px;
+        margin-bottom: 15px;
+        img {
+            width: 100%;
+            height: 100%;
+        }
+    }
+}
+
+.level-game-start {
+    width: 142px;
+    height: 56px;
+    margin: 0 auto;
+    img {
+        width: 100%;
+    }
+}
+.m5 {
+    margin-right: 5px;
+}
+</style>

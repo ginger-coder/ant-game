@@ -14,6 +14,8 @@
         <div class="game-join-btn">
             <img src="@/assets/images/icon-btn-join.png" alt="" />
         </div>
+        <ant-progress />
+        <ant-filter-blur />
     </div>
 </template>
 

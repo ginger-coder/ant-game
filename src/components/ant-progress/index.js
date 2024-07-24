@@ -1,4 +1,4 @@
 import { withInstall } from '@/utils/index';
-import finButton from './src/finButton.vue';
+import antProgress from './src/antProgress.vue';
 
-export default withInstall(finButton);
+export default withInstall(antProgress);
