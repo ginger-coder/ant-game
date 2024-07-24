@@ -7,14 +7,13 @@
     <div class="container index-bg">
         <div class="game-logo">
             <div class="logo-image">
-                <img src="" alt="" />
+                <img src="@/assets/images/logo.png" width="116px" alt="" />
             </div>
-            <div class="logo-text">游戏名称</div>
         </div>
         <div class="game-join-btn">
             <img src="@/assets/images/icon-btn-join.png" alt="" />
         </div>
-        <ant-progress />
+        <ant-progress :percentage="50" />
         <ant-filter-blur />
     </div>
 </template>
@@ -54,8 +53,13 @@ onMounted(() => {
     height: 127px;
     background: rgba(255, 255, 255, 0.44);
     border-radius: 64px;
-    .logo-image {
-    }
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 44px;
+    left: 50%;
+    margin-left: -152px;
 }
 .game-join-btn {
     width: 142px;

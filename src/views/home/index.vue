@@ -7,7 +7,9 @@
     <div class="container index-bg">
         <div class="con-content">
             <div class="home-title">
-                <div class="game-name">游戏名称</div>
+                <div class="game-name">
+                    <img src="@/assets/images/logo.png" width="116px" alt="" />
+                </div>
                 <div class="user-top">
                     <div class="user-avager">
                         <img src="" alt="" />

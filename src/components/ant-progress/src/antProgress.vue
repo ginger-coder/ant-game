@@ -17,9 +17,8 @@
         </div>
         <div class="progress-loading">
             <div class="progress-title">加载中...</div>
-
-            <div class="progress-line-box">
-                <div class="progress-line-active" style="width: 50%"></div>
+            <div class="progress-loading-box">
+                <ant-progress-line :percentage="50" />
             </div>
         </div>
     </div>
@@ -29,7 +28,9 @@
 import { useAppStore } from '@/store';
 import { ref, reactive, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-defineProps({});
+defineProps({
+    percentage: { type: Number, default: 0 }
+});
 /**
  * 仓库
  */
@@ -82,6 +83,7 @@ onMounted(() => {
     }
 }
 .progress-loading {
+    width: 295px;
     position: absolute;
     bottom: 80px;
     left: 50%;
@@ -90,29 +92,12 @@ onMounted(() => {
     .progress-title {
         font-weight: 600;
         font-size: 14px;
-        color: #ffffff;
+        color: #fff;
         text-align: center;
         margin-bottom: 30px;
     }
-    .progress-line-box {
-        width: 295px;
-        height: 20px;
-        border: 3px solid rgb(170, 102, 13);
-        padding: 2px;
-        position: relative;
-        border-radius: 10px;
-        .progress-line-active {
-            min-width: 2px;
-            max-width: 100%;
-            background: #fdbb27;
-            box-shadow: inset -2px -2px 0px 0px #f58310;
-            border-radius: 10px;
-            height: 10px;
-            position: absolute;
-            left: 2px;
-            top: 2px;
-            transition: width 0.5s;
-        }
+    .progress-loading-box {
+        width: 100%;
     }
 }
 </style>
