@@ -28,6 +28,11 @@ const routes = [
         path: '/game',
         name: 'game',
         component: () => import(/* webpackChunkName: 'Game' */ '@/views/game/index.vue')
+    },
+    {
+        path: '/error',
+        name: 'error',
+        component: () => import(/* webpackChunkName: 'Error' */ '@/views/error/lineline.vue')
     }
 ];
 

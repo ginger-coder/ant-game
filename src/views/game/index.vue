@@ -10,7 +10,7 @@
         </div>
         <div class="game-info-card">
             <div class="game-info-title">
-                <div class="level-name">第一关</div>
+                <div class="level-name align-center">第一关</div>
                 <div class="game-time">剩余时间：<span class="t">无限制</span></div>
             </div>
             <ant-progress-line :percentage="50" style="margin-bottom: 12px" />
@@ -129,10 +129,19 @@ const onWaitTimeEnd = () => {
         align-items: center;
         margin-bottom: 11px;
         .level-name {
-            -webkit-text-stroke: 1px #b06400;
             font-size: 14px;
             color: #ffffff;
+            -webkit-text-stroke: 1px #b06400;
             line-height: 16px;
+            &::before {
+                content: '';
+                display: block;
+                width: 20px;
+                height: 20px;
+                background: url('@/assets/images/icon-level-tip.png') no-repeat;
+                background-size: 100% 100%;
+                margin-right: 5px;
+            }
         }
         .game-time {
             font-weight: 500;
