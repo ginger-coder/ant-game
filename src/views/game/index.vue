@@ -47,10 +47,13 @@
                 </div>
             </div>
         </div>
+        <game-over-dialog />
     </div>
 </template>
 
 <script setup>
+import gameOverDialog from './game-over-dialog.vue';
+import gamePassDialog from './game-pass-dialog.vue';
 import { ref, reactive, onMounted } from 'vue';
 import { useAppStore } from '@/store';
 import { useRoute, useRouter } from 'vue-router';
