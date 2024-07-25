@@ -119,6 +119,7 @@
                         />
                     </div>
                 </div>
+                <div class="mobile">客服电话：0350-5624584</div>
             </div>
         </div>
     </van-dialog>
@@ -133,7 +134,7 @@ defineProps({});
 const isMusicStop = ref(true);
 const isAudioStop = ref(false);
 
-const visible = ref(true);
+const visible = ref(false);
 const musicValue = ref(50);
 const onMusicChange = value => {
     console.log(value);
@@ -181,6 +182,11 @@ defineExpose({ init });
             border-radius: 8px;
             margin-bottom: 12px;
             padding: 12px;
+        }
+        .mobile {
+            text-align: center;
+            font-size: 13px;
+            color: #af6400;
         }
         .music-set-title {
             font-weight: 600;
