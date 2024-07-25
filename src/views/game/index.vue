@@ -22,8 +22,8 @@
             </div>
         </div>
         <div class="game-area-box">
-            <!-- <ant-game-wait ref="gameWaitRef" @end="onWaitTimeEnd" /> -->
-            <div class="game-content">
+            <ant-game-wait v-if="isWaitGame" ref="gameWaitRef" @end="onWaitTimeEnd" />
+            <div v-else class="game-content">
                 <div class="game-tip-top">
                     <div class="chinese-info">汉</div>
                     <div class="chinese-tip">
@@ -40,14 +40,15 @@
                 <div class="game-content-desc">选择偏旁和部首组成一个汉字</div>
                 <div class="game-chinese-box">
                     <div v-for="item in chineseList" :key="item.id" class="game-chinese-item">
-                        <div class="game-chinese-item-c">
+                        <div class="game-chinese-item-c" :class="{ active: item.active }">
                             {{ item.chinese }}
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <game-over-dialog />
+        <game-over-dialog ref="gameOverDialogRef" />
+        <game-pass-dialog ref="gamePassDialogRef" />
     </div>
 </template>
 
@@ -72,7 +73,11 @@ const route = useRoute();
 const router = useRouter();
 //console.log('1-开始创建组件-setup')
 
+const isWaitGame = ref(false);
+
 const gameWaitRef = ref();
+const gameOverDialogRef = ref();
+const gamePassDialogRef = ref();
 
 const chineseList = ref([
     {
@@ -81,7 +86,8 @@ const chineseList = ref([
         chinese_read: 'shui',
         chinese_num: '3',
         chinese_left: '三',
-        chinese_audio: 'https://www.baidu.com'
+        chinese_audio: 'https://www.baidu.com',
+        active: false
     },
     {
         id: 2,
@@ -89,231 +95,8 @@ const chineseList = ref([
         chinese_read: 'shui',
         chinese_num: '3',
         chinese_left: '三',
-        chinese_audio: 'https://www.baidu.com'
-    },
-    {
-        id: 3,
-        chinese: '汉',
-        chinese_read: 'shui',
-        chinese_num: '3',
-        chinese_left: '三',
-        chinese_audio: 'https://www.baidu.com'
-    },
-    {
-        id: 4,
-        chinese: '汉',
-        chinese_read: 'shui',
-        chinese_num: '3',
-        chinese_left: '三',
-        chinese_audio: 'https://www.baidu.com'
-    },
-    {
-        id: 5,
-        chinese: '汉',
-        chinese_read: 'shui',
-        chinese_num: '3',
-        chinese_left: '三',
-        chinese_audio: 'https://www.baidu.com'
-    },
-    {
-        id: 6,
-        chinese: '汉',
-        chinese_read: 'shui',
-        chinese_num: '3',
-        chinese_left: '三',
-        chinese_audio: 'https://www.baidu.com'
-    },
-    {
-        id: 7,
-        chinese: '汉',
-        chinese_read: 'shui',
-        chinese_num: '3',
-        chinese_left: '三',
-        chinese_audio: 'https://www.baidu.com'
-    },
-    {
-        id: 8,
-        chinese: '汉',
-        chinese_read: 'shui',
-        chinese_num: '3',
-        chinese_left: '三',
-        chinese_audio: 'https://www.baidu.com'
-    },
-    {
-        id: 9,
-        chinese: '汉',
-        chinese_read: 'shui',
-        chinese_num: '3',
-        chinese_left: '三',
-        chinese_audio: 'https://www.baidu.com'
-    },
-    {
-        id: 10,
-        chinese: '汉',
-        chinese_read: 'shui',
-        chinese_num: '3',
-        chinese_left: '三',
-        chinese_audio: 'https://www.baidu.com'
-    },
-    {
-        id: 11,
-        chinese: '汉',
-        chinese_read: 'shui',
-        chinese_num: '3',
-        chinese_left: '三',
-        chinese_audio: 'https://www.baidu.com'
-    },
-    {
-        id: 12,
-        chinese: '汉',
-        chinese_read: 'shui',
-        chinese_num: '3',
-        chinese_left: '三',
-        chinese_audio: 'https://www.baidu.com'
-    },
-    {
-        id: 13,
-        chinese: '汉',
-        chinese_read: 'shui',
-        chinese_num: '3',
-        chinese_left: '三',
-        chinese_audio: 'https://www.baidu.com'
-    },
-    {
-        id: 14,
-        chinese: '汉',
-        chinese_read: 'shui',
-        chinese_num: '3',
-        chinese_left: '三',
-        chinese_audio: 'https://www.baidu.com'
-    },
-    {
-        id: 15,
-        chinese: '汉',
-        chinese_read: 'shui',
-        chinese_num: '3',
-        chinese_left: '三',
-        chinese_audio: 'https://www.baidu.com'
-    },
-    {
-        id: 16,
-        chinese: '汉',
-        chinese_read: 'shui',
-        chinese_num: '3',
-        chinese_left: '三',
-        chinese_audio: 'https://www.baidu.com'
-    },
-    {
-        id: 17,
-        chinese: '汉',
-        chinese_read: 'shui',
-        chinese_num: '3',
-        chinese_left: '三',
-        chinese_audio: 'https://www.baidu.com'
-    },
-    {
-        id: 18,
-        chinese: '汉',
-        chinese_read: 'shui',
-        chinese_num: '3',
-        chinese_left: '三',
-        chinese_audio: 'https://www.baidu.com'
-    },
-    {
-        id: 19,
-        chinese: '汉',
-        chinese_read: 'shui',
-        chinese_num: '3',
-        chinese_left: '三',
-        chinese_audio: 'https://www.baidu.com'
-    },
-    {
-        id: 20,
-        chinese: '汉',
-        chinese_read: 'shui',
-        chinese_num: '3',
-        chinese_left: '三',
-        chinese_audio: 'https://www.baidu.com'
-    },
-    {
-        id: 21,
-        chinese: '汉',
-        chinese_read: 'shui',
-        chinese_num: '3',
-        chinese_left: '三',
-        chinese_audio: 'https://www.baidu.com'
-    },
-    {
-        id: 22,
-        chinese: '汉',
-        chinese_read: 'shui',
-        chinese_num: '3',
-        chinese_left: '三',
-        chinese_audio: 'https://www.baidu.com'
-    },
-    {
-        id: 23,
-        chinese: '汉',
-        chinese_read: 'shui',
-        chinese_num: '3',
-        chinese_left: '三',
-        chinese_audio: 'https://www.baidu.com'
-    },
-    {
-        id: 24,
-        chinese: '汉',
-        chinese_read: 'shui',
-        chinese_num: '3',
-        chinese_left: '三',
-        chinese_audio: 'https://www.baidu.com'
-    },
-    {
-        id: 25,
-        chinese: '汉',
-        chinese_read: 'shui',
-        chinese_num: '3',
-        chinese_left: '三',
-        chinese_audio: 'https://www.baidu.com'
-    },
-    {
-        id: 26,
-        chinese: '汉',
-        chinese_read: 'shui',
-        chinese_num: '3',
-        chinese_left: '三',
-        chinese_audio: 'https://www.baidu.com'
-    },
-    {
-        id: 27,
-        chinese: '汉',
-        chinese_read: 'shui',
-        chinese_num: '3',
-        chinese_left: '三',
-        chinese_audio: 'https://www.baidu.com'
-    },
-    {
-        id: 28,
-        chinese: '汉',
-        chinese_read: 'shui',
-        chinese_num: '3',
-        chinese_left: '三',
-        chinese_audio: 'https://www.baidu.com'
-    },
-    {
-        id: 29,
-        chinese: '汉',
-        chinese_read: 'shui',
-        chinese_num: '3',
-        chinese_left: '三',
-        chinese_audio: 'https://www.baidu.com'
-    },
-    {
-        id: 130,
-        chinese: '汉',
-        chinese_read: 'shui',
-        chinese_num: '3',
-        chinese_left: '三',
-        chinese_audio: 'https://www.baidu.com'
+        chinese_audio: 'https://www.baidu.com',
+        active: true
     }
 ]);
 
@@ -397,6 +180,12 @@ const onWaitTimeEnd = () => {
         line-height: 40px;
         font-size: 26px;
         color: #571f20;
+        &.active {
+            background: url('@/assets/images/select-cha-bg-active.png') no-repeat;
+            background-size: 100% 100%;
+            color: #ffffff;
+            -webkit-text-stroke: 1px #082350;
+        }
     }
 }
 
