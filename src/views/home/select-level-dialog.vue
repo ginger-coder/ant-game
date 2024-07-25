@@ -110,7 +110,7 @@ defineExpose({ init });
 </script>
 <style scoped lang="scss">
 .select-level-box {
-    width: 311px;
+    width: 100%;
     .select-level-content {
         width: 100%;
         height: 482px;

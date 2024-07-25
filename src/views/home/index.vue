@@ -39,6 +39,7 @@
         </div>
         <ant-filter-blur />
         <select-level-dialog ref="levelDialogRef" />
+        <personal-center-dialog ref="personalCenterRef" />
     </div>
 </template>
 
@@ -47,6 +48,7 @@ import { ref, reactive, onMounted } from 'vue';
 import { useAppStore } from '@/store';
 import { useRoute, useRouter } from 'vue-router';
 import selectLevelDialog from './select-level-dialog.vue';
+import personalCenterDialog from './personal-center-dialog.vue';
 defineProps({});
 /**
  * 仓库

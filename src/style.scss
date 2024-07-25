@@ -3,6 +3,8 @@
     --van-dropdown-menu-height: 28px !important;
     --van-dialog-background: transparent !important;
     --van-grid-item-content-background: transparent !important;
+    --van-switch-node-background: #fdbb27 !important;
+    --van-switch-node-shadow: inset -2px -2px 0px 0px #f58310 !important;
 }
 
 .container {
@@ -16,4 +18,28 @@
 .game-bg {
     background: url('@/assets/images/icon-bg-2.png') no-repeat;
     background-size: 100% 100%;
+}
+
+::-webkit-scrollbar {
+    width: 0px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgb(179, 177, 177);
+    border-radius: 0px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgb(136, 136, 136);
+    border-radius: 0px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgb(100, 100, 100);
+    border-radius: 0px;
+}
+
+::-webkit-scrollbar-thumb:active {
+    background: rgb(68, 68, 68);
+    border-radius: 0px;
 }
