@@ -10,15 +10,28 @@
         </div>
         <div class="game-info-card">
             <div class="game-info-title">
-                <div class="level-name align-center">第一关</div>
-                <div class="game-time">剩余时间：<span class="t">无限制</span></div>
+                <div class="level-name align-center">{{ tipInfo.level_name }}</div>
+                <div class="game-time">
+                    剩余时间：<span class="t">
+                        <span v-if="tipInfo.time_limit === 0">无限制</span>
+                        <van-count-down
+                            v-else
+                            :time="tipInfo.time_limit * 1000"
+                            @@finish="onGameTimeEnd"
+                        />
+                    </span>
+                </div>
             </div>
             <ant-progress-line :percentage="50" style="margin-bottom: 12px" />
             <div class="game-tip">
-                <div class="game-tip-item">一年级</div>
-                <div class="game-tip-item">简单</div>
-                <div class="game-tip-item">剩余数量：<span>22</span></div>
-                <div class="game-tip-item">错误数据：<span>13</span></div>
+                <div class="game-tip-item">{{ tipInfo.grade_name }}</div>
+                <div class="game-tip-item">{{ tipInfo.difficulty_name }}</div>
+                <div class="game-tip-item">
+                    剩余数量：<span>{{ otherNum }}</span>
+                </div>
+                <div class="game-tip-item">
+                    错误数量：<span>{{ errorNum.length }}</span>
+                </div>
             </div>
         </div>
         <div class="game-area-box">
@@ -40,8 +53,12 @@
                 <div class="game-content-desc">选择偏旁和部首组成一个汉字</div>
                 <div class="game-chinese-box">
                     <div v-for="item in chineseList" :key="item.id" class="game-chinese-item">
-                        <div class="game-chinese-item-c" :class="{ active: item.active }">
-                            {{ item.chinese }}
+                        <div
+                            class="game-chinese-item-c"
+                            :class="{ active: item.active }"
+                            @click="handleChineseItemClick(item)"
+                        >
+                            {{ item.name }}
                         </div>
                     </div>
                 </div>
@@ -55,9 +72,12 @@
 <script setup>
 import gameOverDialog from './game-over-dialog.vue';
 import gamePassDialog from './game-pass-dialog.vue';
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, getCurrentInstance, watch, computed } from 'vue';
 import { useAppStore } from '@/store';
 import { useRoute, useRouter } from 'vue-router';
+import api from '@/api';
+import { v4 as uuidv4 } from 'uuid';
+const { proxy } = getCurrentInstance();
 defineProps({});
 /**
  * 仓库
@@ -73,39 +93,105 @@ const route = useRoute();
 const router = useRouter();
 //console.log('1-开始创建组件-setup')
 
-const isWaitGame = ref(false);
-
 const gameWaitRef = ref();
 const gameOverDialogRef = ref();
 const gamePassDialogRef = ref();
+const isWaitGame = ref(true);
+const tipInfo = ref({
+    difficulty_name: '',
+    grade_name: '',
+    level_name: '',
+    time_limit: 0,
+    tolerance: 0
+});
+const chineseList = ref([]);
+const selectChinese = ref([]);
 
-const chineseList = ref([
-    {
-        id: 1,
-        chinese: '汉',
-        chinese_read: 'shui',
-        chinese_num: '3',
-        chinese_left: '三',
-        chinese_audio: 'https://www.baidu.com',
-        active: false
+const errorNum = ref([]);
+const otherNum = ref(0);
+
+watch(
+    () => chineseList.value,
+    newList => {
+        const isFinish = newList.every(item => item.active);
+        if (isFinish) {
+            // game over dialog
+            gamePassDialogRef.value.init();
+        }
+        otherNum.value = newList.filter(item => !item.active).length;
     },
     {
-        id: 2,
-        chinese: '汉',
-        chinese_read: 'shui',
-        chinese_num: '3',
-        chinese_left: '三',
-        chinese_audio: 'https://www.baidu.com',
-        active: true
+        deep: true
     }
-]);
+);
+const start = () => {
+    gameWaitRef.value && gameWaitRef.value.start();
+};
+
+const handleChineseItemClick = item => {
+    if (item.active) {
+        return false;
+    }
+    chineseList.value = chineseList.value.map(el => {
+        if (el.uid === item.uid) {
+            const isSame = determineChineseSame(el);
+            if (isSame) {
+                el.active = true;
+            }
+        }
+        return el;
+    });
+};
+
+const determineChineseSame = el => {
+    let falg = false;
+    if (selectChinese.value.length < 2) {
+        selectChinese.value.push(el);
+        falg = true;
+    }
+    if (selectChinese.value.length === 2) {
+        if (selectChinese.value[0].id === selectChinese.value[1].id) {
+            falg = true;
+            selectChinese.value = [];
+        } else {
+            falg = false;
+            selectChinese.value.pop();
+            errorNum.value.push(selectChinese.value[1]);
+            proxy.$showToast('错误');
+        }
+    }
+    return falg;
+};
+
+const onGameTimeEnd = () => {};
+
+const gameInfo = data => {
+    start();
+    api.getLevelInfo({
+        level_id: data.level_id,
+        grade_id: data.grade_id,
+        difficulty_id: data.difficulty_id
+    }).then(res => {
+        chineseList.value = res.data.characters
+            ? res.data.characters.map(item => {
+                  item.active = false;
+                  item.uid = uuidv4();
+                  return item;
+              })
+            : [];
+        tipInfo.value = res.data;
+    });
+};
 
 onMounted(() => {
     //console.log('3.-组件挂载到页面之后执行-------onMounted')
     // gameWaitRef.value && gameWaitRef.value.start();
+    const data = route.query;
+    gameInfo(data);
 });
 
 const onWaitTimeEnd = () => {
+    isWaitGame.value = false;
     console.log('倒计时结束');
 };
 </script>

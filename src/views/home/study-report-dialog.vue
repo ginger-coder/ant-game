@@ -53,7 +53,7 @@ const route = useRoute();
  */
 const router = useRouter();
 
-const visible = ref(true);
+const visible = ref(false);
 const init = () => {
     visible.value = true;
 };

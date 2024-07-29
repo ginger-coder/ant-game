@@ -38,8 +38,13 @@
                 </div>
                 <!-- 关卡列表 -->
                 <div class="level-list-box">
-                    <div v-for="item in level_number" :key="item" class="level-item">
-                        <img :src="getAssetsFile(`icon-level-${item}.png`)" alt="" />
+                    <div
+                        v-for="(item, index) in level_number"
+                        :key="item"
+                        class="level-item"
+                        @click="handelStart(item.id)"
+                    >
+                        <img :src="getAssetsFile(`icon-level-${index + 1}.png`)" alt="" />
                     </div>
                 </div>
             </div>
@@ -55,6 +60,7 @@ import { ref, reactive, onMounted } from 'vue';
 import { useAppStore } from '@/store';
 import { useRoute, useRouter } from 'vue-router';
 import { getAssetsFile } from '@/utils';
+import api from '@/api';
 defineProps({});
 /**
  * 仓库
@@ -77,7 +83,10 @@ const showGrade = ref(false);
 const gradeList = [
     { text: '一年级', id: 1 },
     { text: '二年级', id: 2 },
-    { text: '三年级', id: 3 }
+    { text: '三年级', id: 3 },
+    { text: '四年级', id: 4 },
+    { text: '五年级', id: 5 },
+    { text: '六年级', id: 6 }
 ];
 
 const activeLevel = ref({
@@ -91,8 +100,19 @@ const levelList = [
     { text: '困难', id: 3 }
 ];
 
-const level_number = ref([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+const level_number = ref([]);
 const visible = ref(false);
+
+const handelStart = id => {
+    router.push({
+        name: 'game',
+        query: {
+            level_id: id,
+            grade_id: activeGrade.value.id,
+            difficulty_id: activeLevel.value.id
+        }
+    });
+};
 
 const handleLevel = (actions, index) => {
     console.log('actions', actions, index);
@@ -104,6 +124,16 @@ const handleGrade = (actions, index) => {
 
 const init = () => {
     visible.value = true;
+    getLevelList();
+};
+
+const getLevelList = () => {
+    api.getLevelList({
+        member_id: 1
+    }).then(res => {
+        console.log('res', res);
+        level_number.value = res.data;
+    });
 };
 
 defineExpose({ init });

@@ -35,7 +35,7 @@ export default ({ mode }) => {
                 resolvers: [VantResolver()]
             }),
             viteVConsole({
-                entry: resolve('src/main.cjs'),
+                entry: resolve('src/main.js'),
                 enabled: mode === 'test' || mode === 'dev',
                 config: {
                     maxLogNumber: 1000,
