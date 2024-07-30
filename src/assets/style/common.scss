@@ -4,8 +4,14 @@ body * {
 }
 
 :root {
-    --van-floating-bubble-background: rgb(77, 62, 227)!important;
+    --van-floating-bubble-background: rgb(77, 62, 227) !important;
 }
+
+@font-face {
+    font-family: 'HYk2gj';
+    src: url('../FangZhengKaiTiJianTi-1.ttf');
+}
+
 .flex-col {
     display: flex;
     flex-direction: column;

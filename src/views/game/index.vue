@@ -241,7 +241,6 @@ onMounted(() => {
     // gameWaitRef.value && gameWaitRef.value.start();
     const data = route.query;
     gameInfo(data);
-    console.log(cnchar.draw('汉').text[0]);
 });
 
 const onWaitTimeEnd = () => {
@@ -359,6 +358,7 @@ const onWaitTimeEnd = () => {
         }
 
         .chinese-info {
+            font-family: 'HYk2gj';
             width: 40px;
             height: 40px;
             background: url('@/assets/images/chinese-bg.png') no-repeat;
