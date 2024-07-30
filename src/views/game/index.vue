@@ -76,15 +76,15 @@
                 </div>
             </div>
         </div>
-        <game-over-dialog ref="gameOverDialogRef" />
-        <game-pass-dialog ref="gamePassDialogRef" />
+        <game-over-dialog ref="gameOverDialogRef" @callback="handleNext(0)" />
+        <game-pass-dialog ref="gamePassDialogRef" @callback="handleNext(1)" />
     </div>
 </template>
 
 <script setup>
 import gameOverDialog from './game-over-dialog.vue';
 import gamePassDialog from './game-pass-dialog.vue';
-import { ref, reactive, onMounted, getCurrentInstance, watch, computed } from 'vue';
+import { ref, reactive, onMounted, getCurrentInstance, watch, computed, onDeactivated } from 'vue';
 import { useAppStore } from '@/store';
 import { useRoute, useRouter } from 'vue-router';
 import api from '@/api';
@@ -106,7 +106,9 @@ const route = useRoute();
  * 路由实例
  */
 const router = useRouter();
-//console.log('1-开始创建组件-setup')
+
+// 当前关卡数据id值
+let levelData = ref({});
 
 const gameWaitRef = ref();
 const gameOverDialogRef = ref();
@@ -125,6 +127,54 @@ const selectChinese = ref([]);
 const errorNum = ref([]);
 const otherNum = ref(0);
 
+let startTime = 0;
+let timing = null;
+const startTiming = () => {
+    timing = setInterval(() => {
+        startTime++;
+    }, 1000);
+};
+const finishTiming = () => {
+    clearInterval(timing);
+};
+
+// 下一关
+const handleNext = type => {
+    console.log('startTime', startTime);
+    // 发送请求后，进入下一关
+    api.handelLevelSubmit({
+        member_id: 1,
+        level_id: levelData.value.level_id,
+        grade_id: levelData.value.grade_id,
+        difficulty_id: levelData.value.difficulty_id,
+        duration: type ? startTime : '',
+        false_num: errorNum.value.length,
+        true_num: chineseList.value.length - errorNum.value.length
+    }).then(() => {
+        // 清空计时--0秒
+        startTime = 0;
+        const findLevelIndex = store.state.levels.findIndex(
+            item => item.id === levelData.value.level_id
+        );
+        const nextIndex = findLevelIndex + 1;
+        if (nextIndex < store.state.levels.length) {
+            const nextId = store.state.levels[nextIndex].id;
+            // 跳转下一关
+            router.replace({
+                name: 'game',
+                query: {
+                    level_id: nextId,
+                    grade_id: levelData.value.grade_id,
+                    difficulty_id: levelData.value.difficulty_id
+                }
+            });
+        } else {
+            // 已通关
+            proxy.$showToast('恭喜，您已通关');
+        }
+    });
+};
+
 const remainderTime = ref(0);
 const countDownTimer = computed(() => {
     return tipInfo.value.time_limit * 1000;
@@ -142,6 +192,7 @@ watch(
         const isFinish = newList.every(item => item.active);
         if (isFinish) {
             // game over dialog
+            finishTiming();
             gamePassDialogRef.value.init();
         }
         otherNum.value = newList.filter(item => !item.active).length;
@@ -154,6 +205,7 @@ const start = () => {
     gameWaitRef.value && gameWaitRef.value.start();
 };
 
+// 点击文字逻辑
 const handleChineseItemClick = item => {
     if (item.active) {
         return false;
@@ -170,11 +222,7 @@ const handleChineseItemClick = item => {
 };
 
 const chineseInfoTimer = ref(null);
-
 const startShowChineseInfo = () => {
-    cnchar.draw(chineseItemInfo.value.name, {
-        el: '#drawNormal'
-    });
     chineseInfoTimer.value = setTimeout(() => {
         chineseItemInfo.value = {};
         clearTimeout(chineseInfoTimer.value);
@@ -208,6 +256,7 @@ const determineChineseSame = el => {
 const onGameTimeEnd = () => {
     // 游戏结束
     const isFinish = chineseList.value.every(item => item.active);
+    finishTiming();
     if (!isFinish) {
         gameOverDialogRef.value.init();
     } else {
@@ -216,37 +265,52 @@ const onGameTimeEnd = () => {
 };
 
 const gameInfo = data => {
-    start();
     api.getLevelInfo({
         level_id: data.level_id,
         grade_id: data.grade_id,
         difficulty_id: data.difficulty_id
     }).then(res => {
-        chineseList.value = res.data.characters
-            ? res.data.characters.map(item => {
-                  item.active = false;
-                  item.uid = uuidv4();
-                  return item;
-              })
-            : [];
-        tipInfo.value = res.data;
-        if (res.data.time_limit === 0) {
-            remainderTime.value = 100;
+        if (res.data.characters.length) {
+            start();
+            chineseList.value = res.data.characters
+                ? res.data.characters.map(item => {
+                      item.active = false;
+                      item.uid = uuidv4();
+                      return item;
+                  })
+                : [];
+            tipInfo.value = res.data;
+            if (res.data.time_limit === 0) {
+                remainderTime.value = 100;
+            }
+        } else {
+            proxy.$showToast('该关卡没有数据');
+            router.back();
         }
     });
 };
 
-onMounted(() => {
-    //console.log('3.-组件挂载到页面之后执行-------onMounted')
-    // gameWaitRef.value && gameWaitRef.value.start();
-    const data = route.query;
-    gameInfo(data);
-});
+watch(
+    () => route.query,
+    data => {
+        levelData.value = data;
+        gameInfo(data);
+    },
+    {
+        immediate: true,
+        deep: true
+    }
+);
 
 const onWaitTimeEnd = () => {
     isWaitGame.value = false;
+    startTiming();
     console.log('倒计时结束');
 };
+
+onDeactivated(() => {
+    clearTimeout(chineseInfoTimer.value);
+});
 </script>
 <style scoped lang="scss">
 .container {

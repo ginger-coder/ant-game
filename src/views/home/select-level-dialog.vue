@@ -56,7 +56,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, computed } from 'vue';
 import { useAppStore } from '@/store';
 import { useRoute, useRouter } from 'vue-router';
 import { getAssetsFile } from '@/utils';
@@ -100,7 +100,9 @@ const levelList = [
     { text: '困难', id: 3 }
 ];
 
-const level_number = ref([]);
+const level_number = computed(() => {
+    return store.state.levels;
+});
 const visible = ref(false);
 
 const handelStart = id => {
@@ -115,25 +117,15 @@ const handelStart = id => {
 };
 
 const handleLevel = (actions, index) => {
-    console.log('actions', actions, index);
     activeLevel.value = actions;
 };
 const handleGrade = (actions, index) => {
     activeGrade.value = actions;
 };
 
-const init = () => {
+const init = (member_id = 1) => {
     visible.value = true;
-    getLevelList();
-};
-
-const getLevelList = () => {
-    api.getLevelList({
-        member_id: 1
-    }).then(res => {
-        console.log('res', res);
-        level_number.value = res.data;
-    });
+    store.getLevelList(member_id);
 };
 
 defineExpose({ init });
