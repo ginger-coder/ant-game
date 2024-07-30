@@ -11,18 +11,20 @@
         <div class="game-info-card">
             <div class="game-info-title">
                 <div class="level-name align-center">{{ tipInfo.level_name }}</div>
-                <div class="game-time">
-                    剩余时间：<span class="t">
-                        <span v-if="tipInfo.time_limit === 0">无限制</span>
-                        <van-count-down
-                            v-else
-                            :time="tipInfo.time_limit * 1000"
-                            @@finish="onGameTimeEnd"
-                        />
-                    </span>
+                <div class="game-time align-center">
+                    剩余时间：
+                    <span v-if="tipInfo.time_limit == 0" class="t">无限制</span>
+                    <van-count-down
+                        v-else
+                        :time="countDownTimer"
+                        style="color: #fdbb27; font-weight: 800"
+                        format="mm:ss"
+                        @finish="onGameTimeEnd"
+                        @change="onTimeChange"
+                    />
                 </div>
             </div>
-            <ant-progress-line :percentage="50" style="margin-bottom: 12px" />
+            <ant-progress-line :percentage="remainderTime" style="margin-bottom: 12px" />
             <div class="game-tip">
                 <div class="game-tip-item">{{ tipInfo.grade_name }}</div>
                 <div class="game-tip-item">{{ tipInfo.difficulty_name }}</div>
@@ -38,17 +40,27 @@
             <ant-game-wait v-if="isWaitGame" ref="gameWaitRef" @end="onWaitTimeEnd" />
             <div v-else class="game-content">
                 <div class="game-tip-top">
-                    <div class="chinese-info">汉</div>
-                    <div class="chinese-tip">
-                        <div class="chinese-read chinese-font">读音：<span>shui</span></div>
-                        <div class="chinese-left chinese-font">部首：<span>三</span></div>
-                    </div>
-                    <div class="chinese-other">
-                        <div class="chinese-audio">
-                            <img src="@/assets/images/icon-audio.png" width="16px" alt="" />
+                    <template v-if="chineseItemInfo.id">
+                        <div class="game-tip-card">
+                            <div class="chinese-info">{{ chineseItemInfo.name }}</div>
+                            <div class="chinese-tip">
+                                <div class="chinese-read chinese-font">
+                                    读音：<span>{{ chineseItemInfo.pronunciation }}</span>
+                                </div>
+                                <div class="chinese-left chinese-font">
+                                    部首：<span>{{ chineseItemInfo.radical }}</span>
+                                </div>
+                            </div>
+                            <div class="chinese-other">
+                                <div class="chinese-audio">
+                                    <img src="@/assets/images/icon-audio.png" width="16px" alt="" />
+                                </div>
+                                <div class="chinese-num chinese-font">
+                                    笔画：<span>{{ chineseItemInfo.strokes }}</span>
+                                </div>
+                            </div>
                         </div>
-                        <div class="chinese-num chinese-font">笔画：<span>3</span></div>
-                    </div>
+                    </template>
                 </div>
                 <div class="game-content-desc">选择偏旁和部首组成一个汉字</div>
                 <div class="game-chinese-box">
@@ -78,6 +90,9 @@ import { useRoute, useRouter } from 'vue-router';
 import api from '@/api';
 import { v4 as uuidv4 } from 'uuid';
 const { proxy } = getCurrentInstance();
+import cnchar from 'cnchar';
+import 'cnchar-radical';
+
 defineProps({});
 /**
  * 仓库
@@ -110,6 +125,17 @@ const selectChinese = ref([]);
 const errorNum = ref([]);
 const otherNum = ref(0);
 
+const remainderTime = ref(0);
+const countDownTimer = computed(() => {
+    return tipInfo.value.time_limit * 1000;
+});
+const onTimeChange = val => {
+    const remain = countDownTimer.value - val.total;
+    remainderTime.value = (remain / countDownTimer.value) * 100;
+};
+
+const chineseItemInfo = ref({});
+
 watch(
     () => chineseList.value,
     newList => {
@@ -134,13 +160,25 @@ const handleChineseItemClick = item => {
     }
     chineseList.value = chineseList.value.map(el => {
         if (el.uid === item.uid) {
-            const isSame = determineChineseSame(el);
-            if (isSame) {
+            const isRight = determineChineseSame(el);
+            if (isRight) {
                 el.active = true;
             }
         }
         return el;
     });
+};
+
+const chineseInfoTimer = ref(null);
+
+const startShowChineseInfo = () => {
+    cnchar.draw(chineseItemInfo.value.name, {
+        el: '#drawNormal'
+    });
+    chineseInfoTimer.value = setTimeout(() => {
+        chineseItemInfo.value = {};
+        clearTimeout(chineseInfoTimer.value);
+    }, 5000);
 };
 
 const determineChineseSame = el => {
@@ -151,6 +189,10 @@ const determineChineseSame = el => {
     }
     if (selectChinese.value.length === 2) {
         if (selectChinese.value[0].id === selectChinese.value[1].id) {
+            chineseItemInfo.value = Object.assign(selectChinese.value[0], {
+                radical: cnchar.radical(selectChinese.value[0].name)[0].radical
+            });
+            startShowChineseInfo();
             falg = true;
             selectChinese.value = [];
         } else {
@@ -163,7 +205,15 @@ const determineChineseSame = el => {
     return falg;
 };
 
-const onGameTimeEnd = () => {};
+const onGameTimeEnd = () => {
+    // 游戏结束
+    const isFinish = chineseList.value.every(item => item.active);
+    if (!isFinish) {
+        gameOverDialogRef.value.init();
+    } else {
+        gamePassDialogRef.value.init();
+    }
+};
 
 const gameInfo = data => {
     start();
@@ -180,6 +230,9 @@ const gameInfo = data => {
               })
             : [];
         tipInfo.value = res.data;
+        if (res.data.time_limit === 0) {
+            remainderTime.value = 100;
+        }
     });
 };
 
@@ -188,6 +241,7 @@ onMounted(() => {
     // gameWaitRef.value && gameWaitRef.value.start();
     const data = route.query;
     gameInfo(data);
+    console.log(cnchar.draw('汉').text[0]);
 });
 
 const onWaitTimeEnd = () => {
@@ -291,13 +345,19 @@ const onWaitTimeEnd = () => {
     .game-tip-top {
         width: 243px;
         height: 80px;
-        background: url('@/assets/images/icon-tip-bg.png') no-repeat;
-        background-size: 100% 100%;
         margin: 0 auto;
-        padding: 18px 20px;
-        display: flex;
-        align-items: center;
-        margin-bottom: 32px;
+        .game-tip-card {
+            width: 100%;
+            height: 100%;
+            background: url('@/assets/images/icon-tip-bg.png') no-repeat;
+            background-size: 100% 100%;
+
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
         .chinese-info {
             width: 40px;
             height: 40px;

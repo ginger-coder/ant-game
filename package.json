@@ -10,6 +10,9 @@
     },
     "dependencies": {
         "axios": "^1.4.0",
+        "cnchar": "^3.2.6",
+        "cnchar-draw": "^3.2.6",
+        "cnchar-radical": "^3.2.6",
         "dayjs": "^1.11.11",
         "lodash": "^4.17.21",
         "nprogress": "^0.2.0",
