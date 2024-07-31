@@ -22,3 +22,11 @@ export const handelLevelSubmit = data => {
         data
     });
 };
+// 错字练习
+export const getWrongBook = data => {
+    return serviceAxios({
+        url: '/index/wrong_book',
+        method: 'post',
+        data
+    });
+};

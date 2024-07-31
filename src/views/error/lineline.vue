@@ -10,27 +10,38 @@
         </div>
         <div class="game-info-card">
             <div class="game-info-title">
-                <div class="level-name align-center">错字联系</div>
+                <div class="level-name align-center">错字练习</div>
             </div>
         </div>
         <div class="game-error-tip">选择您要练习的错字，开始您的闯关之旅吧！</div>
         <div class="game-area-box">
-            <van-grid :border="false" :column-num="3" :gutter="0">
-                <van-grid-item>
-                    <div class="game-card-box align-center">
-                        <div class="game-check">11</div>
-                        <div class="game-chinese">汉</div>
+            <div v-for="item in chineseList" :key="item.uid" class="chinese-item">
+                <div class="game-card-box align-center" @click="handleChineseClick(item)">
+                    <div class="game-check">
+                        <img
+                            v-if="item.active"
+                            src="@/assets/images/icon-checkout-active.png"
+                            alt=""
+                        />
+                        <img v-else src="@/assets/images/icon-checkout-default.png" alt="" />
                     </div>
-                </van-grid-item>
-            </van-grid>
+                    <div class="game-chinese">{{ item.name }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="game-join-btn" @click="handleStartGame">
+            <img src="@/assets/images/icon-btn-join.png" alt="" />
         </div>
     </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, getCurrentInstance } from 'vue';
 import { useAppStore } from '@/store';
 import { useRoute, useRouter } from 'vue-router';
+import api from '@/api';
+import { v4 as uuidv4 } from 'uuid';
+const { proxy } = getCurrentInstance();
 defineProps({});
 /**
  * 仓库
@@ -44,38 +55,47 @@ const route = useRoute();
  * 路由实例
  */
 const router = useRouter();
-//console.log('1-开始创建组件-setup')
 
-const isWaitGame = ref(false);
+const handleChineseClick = item => {
+    chineseList.value = chineseList.value.map(el => {
+        if (el.uid === item.uid) {
+            el.active = !el.active;
+        }
+        return el;
+    });
+};
 
-const gameWaitRef = ref();
-const gameOverDialogRef = ref();
-const gamePassDialogRef = ref();
+const chineseList = ref([]);
 
-const chineseList = ref([
-    {
-        id: 1,
-        chinese: '汉',
-        chinese_read: 'shui',
-        chinese_num: '3',
-        chinese_left: '三',
-        chinese_audio: 'https://www.baidu.com',
-        active: false
-    },
-    {
-        id: 2,
-        chinese: '汉',
-        chinese_read: 'shui',
-        chinese_num: '3',
-        chinese_left: '三',
-        chinese_audio: 'https://www.baidu.com',
-        active: true
+const init = () => {
+    api.getWrongBook({
+        member_id: 1
+    }).then(res => {
+        chineseList.value = res.data.map(item => {
+            item.active = false;
+            item.uid = uuidv4();
+            return item;
+        });
+    });
+};
+
+const handleStartGame = () => {
+    const workbook = chineseList.value.filter(el => el.active);
+    const workids = workbook.map(el => el.id);
+    if (workbook.length) {
+        router.push({
+            name: 'game',
+            query: {
+                workbook: workids.join(',')
+            }
+        });
+    } else {
+        proxy.$showToast('请至少选择一个汉字，再进行练习哦！~');
     }
-]);
+};
 
 onMounted(() => {
-    //console.log('3.-组件挂载到页面之后执行-------onMounted')
-    // gameWaitRef.value && gameWaitRef.value.start();
+    init();
 });
 
 const onWaitTimeEnd = () => {
@@ -126,10 +146,26 @@ const onWaitTimeEnd = () => {
     line-height: 25px;
     -webkit-text-stroke: 1px #7a3d0f;
 }
+.game-join-btn {
+    margin: 0 auto;
+    width: 142px;
+    height: 56px;
+    img {
+        width: 100%;
+    }
+}
 .game-area-box {
     padding-top: 18px;
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    height: calc(100% - 350px);
+    .chinese-item {
+        padding: 0 5px;
+        margin-bottom: 12px;
+    }
     .game-card-box {
-        width: 104px;
+        width: 100%;
         height: 64px;
         background: #fefbeb;
         box-shadow:
@@ -137,6 +173,16 @@ const onWaitTimeEnd = () => {
             inset -2px -2px 1px 0px rgba(223, 151, 95, 0.52),
             inset 2px 2px 1px 0px #ffffff;
         border-radius: 16px;
+        padding: 14px 16px;
+        .game-check {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            img {
+                width: 100%;
+                height: 100%;
+            }
+        }
         .game-chinese {
             width: 40px;
             height: 40px;
@@ -147,6 +193,7 @@ const onWaitTimeEnd = () => {
             color: #aa660d;
             text-align: center;
             line-height: 40px;
+            font-family: 'HYk2gj';
         }
     }
 }

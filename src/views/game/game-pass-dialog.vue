@@ -7,7 +7,7 @@
     <van-dialog v-model:show="visible" :show-confirm-button="false">
         <div class="game-finish-container">
             <div class="btn-box">
-                <div class="game-btn" @click="emits('callback')">
+                <div v-if="props.type == 1" class="game-btn" @click="backHome">
                     <img src="@/assets/images/game-next.png" alt="" />
                 </div>
                 <div class="back-home" @click="backHome">返回首页</div>
@@ -20,6 +20,12 @@
 import { ref, reactive, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 const emits = defineEmits(['callback']);
+const props = defineProps({
+    type: {
+        type: Number,
+        default: 0
+    }
+});
 const router = useRouter();
 
 const visible = ref(false);
@@ -29,7 +35,11 @@ const init = () => {
 
 const backHome = () => {
     visible.value = false;
-    router.replace('/home');
+    if (props.type === 0) {
+        router.replace('/home');
+    } else {
+        router.back();
+    }
 };
 
 defineExpose({ init });

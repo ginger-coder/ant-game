@@ -21,7 +21,7 @@
                         <div class="user-data">识字数：1000+</div>
                     </div>
                 </div>
-                <div class="err-book">
+                <div class="err-book" @click="handleErrBookClick">
                     <img src="@/assets/images/icon-btn-error.png" alt="" />
                 </div>
             </div>
@@ -72,6 +72,12 @@ const levelDialogRef = ref();
 
 const handleSelectLevel = () => {
     levelDialogRef.value.init();
+};
+
+const handleErrBookClick = () => {
+    router.push({
+        name: 'error'
+    });
 };
 
 onMounted(() => {
