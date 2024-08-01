@@ -13,7 +13,7 @@
         <div class="game-join-btn">
             <img src="@/assets/images/icon-btn-join.png" alt="" />
         </div>
-        <ant-progress :percentage="50" />
+        <ant-progress :percentage="prog" />
         <ant-filter-blur />
     </div>
 </template>
@@ -40,8 +40,18 @@ const router = useRouter();
  * 数据部分
  */
 const data = reactive({});
+
+let timer = null;
+const prog = ref(0);
 onMounted(() => {
-    //console.log('3.-组件挂载到页面之后执行-------onMounted')
+    timer = setInterval(function () {
+        if (prog.value < 100) {
+            prog.value = prog.value + Math.random() * 5;
+        } else {
+            clearInterval(timer);
+            router.replace('/home');
+        }
+    }, 100);
 });
 </script>
 <style scoped lang="scss">
