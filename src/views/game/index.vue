@@ -31,7 +31,7 @@
                     {{ tipInfo.difficulty_name }}
                 </div>
                 <div class="game-tip-item">
-                    剩余数量：<span>{{ otherNum }}</span>
+                    剩余数量：<span>{{ otherNum.length }}</span>
                 </div>
                 <div class="game-tip-item">
                     错误数量：<span>{{ errorNum.length }}</span>
@@ -130,7 +130,7 @@ const selectChinese = ref([]);
 
 const rightNum = ref([]);
 const errorNum = ref([]);
-const otherNum = ref(0);
+const otherNum = ref([]);
 
 let startTime = 0;
 let timing = null;
@@ -143,25 +143,29 @@ const finishTiming = () => {
     clearInterval(timing);
 };
 
+let passTimer = null;
+
 // 下一关
 const handleNext = () => {
-    console.log('startTime', startTime);
-
     const findLevelIndex = store.state.levels.findIndex(
         item => item.id === levelData.value.level_id
     );
     const nextIndex = findLevelIndex + 1;
     if (nextIndex < store.state.levels.length) {
         const nextId = store.state.levels[nextIndex].id;
+        proxy.$showToast('恭喜，小朋友你已经通关啦~');
+
         // 跳转下一关
-        router.replace({
-            name: 'game',
-            query: {
-                level_id: nextId,
-                grade_id: levelData.value.grade_id,
-                difficulty_id: levelData.value.difficulty_id
-            }
-        });
+        passTimer = setTimeout(() => {
+            router.replace({
+                name: 'game',
+                query: {
+                    level_id: nextId,
+                    grade_id: levelData.value.grade_id,
+                    difficulty_id: levelData.value.difficulty_id
+                }
+            });
+        }, 500);
     }
 };
 
@@ -206,7 +210,7 @@ watch(
                 submitGameData(1);
             }
         }
-        otherNum.value = newList.filter(item => !item.active).length;
+        otherNum.value = newList.filter(item => !item.active);
     },
     {
         deep: true
@@ -258,8 +262,8 @@ const determineChineseSame = el => {
         } else {
             falg = false;
             selectChinese.value.pop();
-            errorNum.value.push(selectChinese.value[1]);
-            proxy.$showToast('错误');
+            errorNum.value.push(selectChinese.value[0]);
+            proxy.$showToast('选错了哦~');
         }
     }
     return falg;
@@ -312,14 +316,18 @@ const workTimer = ref();
 
 const workInfo = data => {
     remainderTime.value = 100;
-    chineseList.value = JSON.parse(data.workbook).map(el => {
-        el.active = false;
-        return el;
+    api.getWrongBookList({
+        characters_ids: data.workbook || ''
+    }).then(res => {
+        chineseList.value = (res.data.character || []).map(el => {
+            el.active = false;
+            return el;
+        });
+        tipInfo.value.level_name = '练习';
+        workTimer.value = setTimeout(() => {
+            start();
+        }, 500);
     });
-    tipInfo.value.level_name = '练习';
-    workTimer.value = setTimeout(() => {
-        start();
-    }, 500);
 };
 watch(
     () => route.query,
@@ -348,6 +356,7 @@ const onWaitTimeEnd = () => {
 onDeactivated(() => {
     clearTimeout(chineseInfoTimer.value);
     clearTimeout(workTimer.value);
+    clearTimeout(passTimer);
 });
 </script>
 <style scoped lang="scss">

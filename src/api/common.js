@@ -30,3 +30,11 @@ export const getWrongBook = data => {
         data
     });
 };
+// 错字练习List
+export const getWrongBookList = data => {
+    return serviceAxios({
+        url: '/index/exercise',
+        method: 'post',
+        data
+    });
+};
