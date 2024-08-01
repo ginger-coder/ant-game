@@ -19,7 +19,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, onDeactivated } from 'vue';
 import { useAppStore } from '@/store';
 import { useRoute, useRouter } from 'vue-router';
 defineProps({});
@@ -43,15 +43,22 @@ const data = reactive({});
 
 let timer = null;
 const prog = ref(0);
+const homeTimer = null;
 onMounted(() => {
     timer = setInterval(function () {
         if (prog.value < 100) {
             prog.value = prog.value + Math.random() * 5;
         } else {
             clearInterval(timer);
-            router.replace('/home');
+            homeTimer = setTimeout(() => {
+                router.replace('/home');
+            }, 500);
         }
     }, 100);
+});
+
+onDeactivated(() => {
+    clearTimeout(homeTimer);
 });
 </script>
 <style scoped lang="scss">

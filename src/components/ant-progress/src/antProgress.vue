@@ -18,7 +18,7 @@
         <div class="progress-loading">
             <div class="progress-title">加载中...</div>
             <div class="progress-loading-box">
-                <ant-progress-line :percentage="50" />
+                <ant-progress-line :percentage="percent" />
             </div>
         </div>
     </div>
@@ -26,10 +26,14 @@
 
 <script setup>
 import { useAppStore } from '@/store';
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-defineProps({
+const props = defineProps({
     percentage: { type: Number, default: 0 }
+});
+
+const percent = computed(() => {
+    return props.percentage;
 });
 /**
  * 仓库

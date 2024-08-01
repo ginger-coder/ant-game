@@ -15,7 +15,7 @@ const pinia = createPinia();
 app.config.globalProperties.$showToast = showToast;
 app.config.globalProperties.$showDialog = showDialog;
 
-getCode();
+// getCode();
 
 app.use(router);
 app.use(pinia);

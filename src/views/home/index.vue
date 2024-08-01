@@ -16,9 +16,9 @@
                     </div>
                     <div class="user-info">
                         <div class="user-name">
-                            <van-text-ellipsis content="踩核查" />
+                            <van-text-ellipsis content="踩蘑菇的小伙子" />
                         </div>
-                        <div class="user-data">识字数：1000+</div>
+                        <div class="user-data">识字数：56</div>
                     </div>
                 </div>
                 <div class="err-book" @click="handleErrBookClick">
