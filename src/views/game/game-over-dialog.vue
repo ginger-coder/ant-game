@@ -7,7 +7,7 @@
     <van-dialog v-model:show="visible" :show-confirm-button="false">
         <div class="game-finish-container">
             <div class="btn-box">
-                <div v-if="props.type == 1" class="game-btn" @click="emits('callback')">
+                <div v-if="props.type == 1" class="game-btn" @click="handleNext">
                     <img src="@/assets/images/game-again.png" alt="" />
                 </div>
                 <div class="back-home" @click="backHome">返回首页</div>
@@ -33,12 +33,17 @@ const init = () => {
     visible.value = true;
 };
 
+const handleNext = () => {
+    visible.value = false;
+    emits('callback');
+};
+
 const backHome = () => {
     visible.value = false;
     if (props.type === 0) {
-        router.replace('/home');
+        router.replace('/error');
     } else {
-        router.back();
+        router.replace('/home');
     }
 };
 

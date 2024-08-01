@@ -34,10 +34,7 @@ const centage = computed(() => {
         box-shadow: inset -2px -2px 0px 0px #f58310;
         border-radius: 10px;
         height: 10px;
-        position: absolute;
-        left: 2px;
-        top: 2px;
-        transition: width 0.5s;
+        transition: width 0.8s;
     }
 }
 </style>

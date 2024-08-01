@@ -198,11 +198,14 @@ const onTimeChange = val => {
 
 const chineseItemInfo = ref({});
 
+const isFinish = computed(() => {
+    return chineseList.value.every(item => item.active);
+});
+
 watch(
     () => chineseList.value,
     newList => {
-        const isFinish = newList.every(item => item.active);
-        if (isFinish) {
+        if (isFinish.value) {
             // game over dialog
             finishTiming();
             gamePassDialogRef.value.init();
@@ -271,9 +274,8 @@ const determineChineseSame = el => {
 
 const onGameTimeEnd = () => {
     // 游戏结束
-    const isFinish = chineseList.value.every(item => item.active);
     finishTiming();
-    if (!isFinish) {
+    if (!isFinish.value) {
         gameOverDialogRef.value.init();
         if (!route.query.workbook) {
             submitGameData(0);
@@ -319,10 +321,12 @@ const workInfo = data => {
     api.getWrongBookList({
         characters_ids: data.workbook || ''
     }).then(res => {
-        chineseList.value = (res.data.character || []).map(el => {
+        chineseList.value = res.data.characters.map(el => {
             el.active = false;
+            el.uid = uuidv4();
             return el;
         });
+        console.log('chineseList', chineseList.value);
         tipInfo.value.level_name = '练习';
         workTimer.value = setTimeout(() => {
             start();

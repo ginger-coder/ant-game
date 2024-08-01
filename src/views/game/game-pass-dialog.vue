@@ -7,7 +7,7 @@
     <van-dialog v-model:show="visible" :show-confirm-button="false">
         <div class="game-finish-container">
             <div class="btn-box">
-                <div v-if="props.type == 1" class="game-btn" @click="backHome">
+                <div v-if="props.type == 1" class="game-btn" @click="handleNext">
                     <img src="@/assets/images/game-next.png" alt="" />
                 </div>
                 <div class="back-home" @click="backHome">返回首页</div>
@@ -33,12 +33,17 @@ const init = () => {
     visible.value = true;
 };
 
+const handleNext = () => {
+    visible.value = false;
+    emits('callback');
+};
+
 const backHome = () => {
     visible.value = false;
     if (props.type === 0) {
-        router.replace('/home');
+        router.replace('/error');
     } else {
-        router.back();
+        router.replace('/home');
     }
 };
 
@@ -55,8 +60,11 @@ defineExpose({ init });
     .btn-box {
         position: absolute;
         top: 320px;
-        left: 50%;
-        margin-left: -57px;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
         .back-home {
             text-align: center;
             font-weight: 500;

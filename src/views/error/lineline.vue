@@ -97,10 +97,6 @@ const handleStartGame = () => {
 onMounted(() => {
     init();
 });
-
-const onWaitTimeEnd = () => {
-    console.log('倒计时结束');
-};
 </script>
 <style scoped lang="scss">
 .container {
