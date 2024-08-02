@@ -10,11 +10,13 @@
                 <img src="@/assets/images/logo.png" width="116px" alt="" />
             </div>
         </div>
-        <div class="game-join-btn">
+        <div class="game-join-btn" @click="start">
             <img src="@/assets/images/icon-btn-join.png" alt="" />
         </div>
-        <ant-progress :percentage="prog" />
-        <ant-filter-blur />
+        <template v-if="isProgress">
+            <ant-progress :percentage="prog" />
+            <ant-filter-blur />
+        </template>
     </div>
 </template>
 
@@ -35,16 +37,14 @@ const route = useRoute();
  * 路由实例
  */
 const router = useRouter();
-//console.log('1-开始创建组件-setup')
-/**
- * 数据部分
- */
-const data = reactive({});
+
+const isProgress = ref(false);
 
 let timer = null;
 const prog = ref(0);
-const homeTimer = null;
-onMounted(() => {
+let homeTimer = null;
+const start = () => {
+    isProgress.value = true;
     timer = setInterval(function () {
         if (prog.value < 100) {
             prog.value = prog.value + Math.random() * 5;
@@ -55,7 +55,7 @@ onMounted(() => {
             }, 500);
         }
     }, 100);
-});
+};
 
 onDeactivated(() => {
     clearTimeout(homeTimer);

@@ -38,17 +38,12 @@
                 </div>
                 <!-- 关卡列表 -->
                 <div class="level-list-box">
-                    <div
-                        v-for="(item, index) in level_number"
-                        :key="item"
-                        class="level-item"
-                        @click="handelStart(item.id)"
-                    >
+                    <div v-for="(item, index) in level_number" :key="item" class="level-item">
                         <img :src="getAssetsFile(`icon-level-${index + 1}.png`)" alt="" />
                     </div>
                 </div>
             </div>
-            <div class="level-game-start">
+            <div class="level-game-start" @click="handelStart">
                 <img src="@/assets/images/icon-btn-start.png" alt="" />
             </div>
         </div>
@@ -56,10 +51,11 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, computed } from 'vue';
+import { ref, reactive, onMounted, computed, getCurrentInstance } from 'vue';
 import { useAppStore } from '@/store';
 import { useRoute, useRouter } from 'vue-router';
 import { getAssetsFile } from '@/utils';
+const { proxy } = getCurrentInstance();
 import api from '@/api';
 defineProps({});
 /**
@@ -105,11 +101,26 @@ const level_number = computed(() => {
 });
 const visible = ref(false);
 
-const handelStart = id => {
+const getLevelId = () => {
+    for (let i = 0; i < level_number.value.length; i++) {
+        const el = level_number.value[i];
+        if (!el.is_pass) {
+            return level_number.value[i].id;
+        }
+    }
+    return false;
+};
+
+const handelStart = () => {
+    const level_id = getLevelId();
+    if (!level_id) {
+        proxy.$showToast('恭喜，小朋友你已经通关啦~');
+        return;
+    }
     router.push({
         name: 'game',
         query: {
-            level_id: id,
+            level_id,
             grade_id: activeGrade.value.id,
             difficulty_id: activeLevel.value.id
         }

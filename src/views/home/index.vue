@@ -14,7 +14,7 @@
                     <div class="user-avager">
                         <img src="" alt="" />
                     </div>
-                    <div class="user-info">
+                    <div class="user-info" @click="handleInfo">
                         <div class="user-name">
                             <van-text-ellipsis content="踩蘑菇的小伙子" />
                         </div>
@@ -40,7 +40,6 @@
         <ant-filter-blur />
         <select-level-dialog ref="levelDialogRef" />
         <personal-center-dialog ref="personalCenterRef" />
-        <study-report-dialog ref="studyReportRef" />
     </div>
 </template>
 
@@ -50,7 +49,7 @@ import { useAppStore } from '@/store';
 import { useRoute, useRouter } from 'vue-router';
 import selectLevelDialog from './select-level-dialog.vue';
 import personalCenterDialog from './personal-center-dialog.vue';
-import studyReportDialog from './study-report-dialog.vue';
+
 defineProps({});
 /**
  * 仓库
@@ -78,6 +77,11 @@ const handleErrBookClick = () => {
     router.push({
         name: 'error'
     });
+};
+
+const personalCenterRef = ref();
+const handleInfo = () => {
+    personalCenterRef.value.init();
 };
 
 onMounted(() => {

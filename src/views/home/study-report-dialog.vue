@@ -4,7 +4,12 @@
   时间：2024年07月24日 14:04:26
 -->
 <template>
-    <van-dialog v-model:show="visible" :show-confirm-button="false" :close-on-click-overlay="true">
+    <van-dialog
+        v-model:show="visible"
+        teleport="body"
+        :show-confirm-button="false"
+        :close-on-click-overlay="true"
+    >
         <div class="report-container">
             <div class="user-info-card">
                 <div class="user-info-content">张同学，恭喜您，您已经认识9999个汉字了</div>

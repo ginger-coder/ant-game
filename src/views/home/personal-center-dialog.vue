@@ -16,64 +16,10 @@
                         <div class="user-id">ID：123456789</div>
                     </div>
                 </div>
-                <div class="game-report align-center">识字报告</div>
+                <div class="game-report align-center" @click="handleReport">识字报告</div>
             </div>
             <div class="game-list-box">
                 <van-grid :border="false" :column-num="3" :gutter="0">
-                    <van-grid-item>
-                        <div class="game-card-box">
-                            <div class="game-name">连连看</div>
-                            <div class="game-process">二年级 第五关</div>
-                        </div>
-                    </van-grid-item>
-                    <van-grid-item>
-                        <div class="game-card-box">
-                            <div class="game-name">连连看</div>
-                            <div class="game-process">二年级 第五关</div>
-                        </div>
-                    </van-grid-item>
-                    <van-grid-item>
-                        <div class="game-card-box">
-                            <div class="game-name">连连看</div>
-                            <div class="game-process">二年级 第五关</div>
-                        </div>
-                    </van-grid-item>
-                    <van-grid-item>
-                        <div class="game-card-box">
-                            <div class="game-name">连连看</div>
-                            <div class="game-process">二年级 第五关</div>
-                        </div>
-                    </van-grid-item>
-                    <van-grid-item>
-                        <div class="game-card-box">
-                            <div class="game-name">连连看</div>
-                            <div class="game-process">二年级 第五关</div>
-                        </div>
-                    </van-grid-item>
-                    <van-grid-item>
-                        <div class="game-card-box">
-                            <div class="game-name">连连看</div>
-                            <div class="game-process">二年级 第五关</div>
-                        </div>
-                    </van-grid-item>
-                    <van-grid-item>
-                        <div class="game-card-box">
-                            <div class="game-name">连连看</div>
-                            <div class="game-process">二年级 第五关</div>
-                        </div>
-                    </van-grid-item>
-                    <van-grid-item>
-                        <div class="game-card-box">
-                            <div class="game-name">连连看</div>
-                            <div class="game-process">二年级 第五关</div>
-                        </div>
-                    </van-grid-item>
-                    <van-grid-item>
-                        <div class="game-card-box">
-                            <div class="game-name">连连看</div>
-                            <div class="game-process">二年级 第五关</div>
-                        </div>
-                    </van-grid-item>
                     <van-grid-item>
                         <div class="game-card-box">
                             <div class="game-name">连连看</div>
@@ -122,6 +68,7 @@
                 <div class="mobile">客服电话：0350-5624584</div>
             </div>
         </div>
+        <study-report-dialog ref="studyReportRef" />
     </van-dialog>
 </template>
 
@@ -129,6 +76,8 @@
 import { ref, reactive, onMounted } from 'vue';
 import { useAppStore } from '@/store';
 import { useRoute, useRouter } from 'vue-router';
+import studyReportDialog from './study-report-dialog.vue';
+
 defineProps({});
 
 const isMusicStop = ref(true);
@@ -136,12 +85,17 @@ const isAudioStop = ref(false);
 
 const visible = ref(false);
 const musicValue = ref(50);
+const studyReportRef = ref();
 const onMusicChange = value => {
     console.log(value);
 };
 const audioValue = ref(50);
 const onAudioChange = value => {
     console.log(value);
+};
+
+const handleReport = () => {
+    studyReportRef.value.init();
 };
 /**
  * 仓库
