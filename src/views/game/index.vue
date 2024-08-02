@@ -148,13 +148,11 @@ let passTimer = null;
 // 下一关
 const handleNext = () => {
     const findLevelIndex = store.state.levels.findIndex(
-        item => item.id === levelData.value.level_id
+        item => item.id === Number(levelData.value.level_id)
     );
     const nextIndex = findLevelIndex + 1;
     if (nextIndex < store.state.levels.length) {
         const nextId = store.state.levels[nextIndex].id;
-        proxy.$showToast('恭喜，小朋友你已经通关啦~');
-
         // 跳转下一关
         passTimer = setTimeout(() => {
             router.replace({
@@ -166,6 +164,8 @@ const handleNext = () => {
                 }
             });
         }, 500);
+    } else {
+        proxy.$showToast('恭喜，小朋友你已经通关啦~');
     }
 };
 
@@ -343,6 +343,9 @@ watch(
             gameType.value = 1;
             levelData.value = data;
             gameInfo(data);
+            if (!store.state.levels.length) {
+                store.getLevelList(store.state.user.id);
+            }
         }
     },
     {
