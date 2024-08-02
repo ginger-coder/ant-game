@@ -38,3 +38,11 @@ export const getWrongBookList = data => {
         data
     });
 };
+// login
+export const requestForToken = code => {
+    return serviceAxios({
+        url: '/index/login',
+        method: 'post',
+        data: { code }
+    });
+};

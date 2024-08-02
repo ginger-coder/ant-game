@@ -10,8 +10,9 @@ export const getCode = async () => {
     let appid = 'wxdcf14ac8c121f479'; // 这里就是微信提供的测试appid
     let url = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${appid}&redirect_uri=${encodeURIComponent(location.href)}&response_type=code&scope=snsapi_userinfo&state=STATE&connect_redirect=1#wechat_redirect`;
     const _code = getURLParam('code', location.href);
+    console.log('_code', _code);
     //如果没有code 去获取code
-    if (_code === null) {
+    if (!_code) {
         window.location.href = url;
     } else {
         //获取到code传递给后端获取token
@@ -20,5 +21,5 @@ export const getCode = async () => {
 };
 const getToken = code => {
     // 调用后端接口
-    api.login(code).then(res => {});
+    api.requestForToken(code).then(res => {});
 };

@@ -54,6 +54,7 @@ export default ({ mode }) => {
         },
         server: {
             host: '0.0.0.0',
+            port: 80,
             open: true,
             proxy: {
                 '/proxy': {
