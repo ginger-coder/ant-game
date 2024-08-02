@@ -71,3 +71,7 @@ export const getToken = () => {
 export const getUserInfoCache = () => {
     return getCache(CacheUserInfo, { isSessionStorage: true }, null) || null;
 };
+
+export const getUserInfo = () => {
+    return JSON.parse(localStorage.getItem('user')) || null;
+};

@@ -55,14 +55,14 @@ export default ({ mode }) => {
         server: {
             host: '0.0.0.0',
             port: 80,
-            open: true,
-            proxy: {
-                '/proxy': {
-                    target: process.env.VITE_APP_BASE_URL,
-                    changeOrigin: true,
-                    rewrite: path => path.replace(/^\/proxy/, '')
-                }
-            }
+            open: true
+            // proxy: {
+            //     '/proxy': {
+            //         target: process.env.VITE_APP_BASE_URL,
+            //         changeOrigin: true,
+            //         rewrite: path => path.replace(/^\/proxy/, '')
+            //     }
+            // }
         }
     });
 };

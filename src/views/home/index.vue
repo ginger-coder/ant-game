@@ -12,11 +12,11 @@
                 </div>
                 <div class="user-top">
                     <div class="user-avager">
-                        <img src="" alt="" />
+                        <img :src="userInfo.avatar" alt="" />
                     </div>
                     <div class="user-info" @click="handleInfo">
                         <div class="user-name">
-                            <van-text-ellipsis content="踩蘑菇的小伙子" />
+                            <van-text-ellipsis :content="userInfo.nickname" />
                         </div>
                         <div class="user-data">识字数：56</div>
                     </div>
@@ -44,12 +44,13 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, computed } from 'vue';
 import { useAppStore } from '@/store';
 import { useRoute, useRouter } from 'vue-router';
 import selectLevelDialog from './select-level-dialog.vue';
 import personalCenterDialog from './personal-center-dialog.vue';
-
+import { getUserInfo } from '@/utils/cache';
+import api from '@/api';
 defineProps({});
 /**
  * 仓库
@@ -64,6 +65,15 @@ const route = useRoute();
  */
 const router = useRouter();
 //console.log('1-开始创建组件-setup')
+
+const userInfo = computed(() => {
+    return getUserInfo();
+});
+
+const init = () => {
+    store.setUserInfo(userInfo.value.id);
+};
+
 /**
  * 数据部分
  */
@@ -85,7 +95,7 @@ const handleInfo = () => {
 };
 
 onMounted(() => {
-    //console.log('3.-组件挂载到页面之后执行-------onMounted')
+    init();
 });
 </script>
 <style scoped lang="scss">

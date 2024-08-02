@@ -9,21 +9,24 @@
             <div class="personal-title justify-between align-center">
                 <div class="personal-title-user align-center">
                     <div class="user-avager">
-                        <img src="" alt="" />
+                        <img :src="userInfo.avatar" alt="" />
                     </div>
                     <div class="user-info">
-                        <div class="user-name">马文明</div>
-                        <div class="user-id">ID：123456789</div>
+                        <div class="user-name">{{ userInfo.nickname }}</div>
+                        <div class="user-id">ID：{{ userInfo.id }}</div>
                     </div>
                 </div>
                 <div class="game-report align-center" @click="handleReport">识字报告</div>
             </div>
             <div class="game-list-box">
                 <van-grid :border="false" :column-num="3" :gutter="0">
-                    <van-grid-item>
-                        <div class="game-card-box">
-                            <div class="game-name">连连看</div>
-                            <div class="game-process">二年级 第五关</div>
+                    <van-grid-item v-for="item in userInfo.game_list" :key="item.id">
+                        <div
+                            class="game-card-box"
+                            :style="{ backgroundImage: `url(${item.image})` }"
+                        >
+                            <div class="game-name">{{ item.name }}</div>
+                            <div class="game-process">{{ item.highest }}</div>
                         </div>
                     </van-grid-item>
                 </van-grid>
@@ -73,7 +76,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, computed } from 'vue';
 import { useAppStore } from '@/store';
 import { useRoute, useRouter } from 'vue-router';
 import studyReportDialog from './study-report-dialog.vue';
@@ -101,6 +104,10 @@ const handleReport = () => {
  * 仓库
  */
 const store = useAppStore();
+
+const userInfo = computed(() => {
+    return store.state.user;
+});
 /**
  * 路由对象
  */
@@ -164,7 +171,7 @@ defineExpose({ init });
         .game-card-box {
             width: 72px;
             height: 72px;
-            background: url('@/assets/images/game-card-bg.png') no-repeat;
+            background-repeat: no-repeat;
             background-size: 100% 100%;
             position: relative;
             .game-name {
@@ -208,7 +215,7 @@ defineExpose({ init });
             .user-name {
                 font-size: 13px;
                 color: #ffffff;
-                -webkit-text-stroke: 2px #1c74f9;
+                // -webkit-text-stroke: 2px #1c74f9;
             }
             .user-id {
                 font-weight: 500;

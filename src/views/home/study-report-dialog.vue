@@ -12,9 +12,13 @@
     >
         <div class="report-container">
             <div class="user-info-card">
-                <div class="user-info-content">张同学，恭喜您，您已经认识9999个汉字了</div>
+                <div class="user-info-content">
+                    同学，恭喜您，您已经认识{{ userInfo.learn_num }}个汉字了
+                </div>
                 <div class="user-info-tip-content align-center justify-between">
-                    <div class="user-info-tip">超过了 <span>90%</span> 的同伴</div>
+                    <div class="user-info-tip">
+                        超过了 <span>{{ userInfo.exceed_num }}</span> 的同伴
+                    </div>
                     <div class="user-info-tip-icon">
                         <img src="@/assets/images/icon-user-tip.png" alt="" />
                     </div>
@@ -24,24 +28,33 @@
                 <div class="user-game-title">这是您在各游戏模式的最高卡数：</div>
                 <div class="game-list-box">
                     <van-grid :border="false" :column-num="3" :gutter="0">
-                        <van-grid-item>
-                            <div class="game-card-box">
-                                <div class="game-name">连连看</div>
-                                <div class="game-process">二年级 第五关</div>
+                        <van-grid-item v-for="item in userInfo.game_list" :key="item.id">
+                            <div
+                                class="game-card-box"
+                                :style="{ backgroundImage: `url(${item.image})` }"
+                            >
+                                <div class="game-name">{{ item.name }}</div>
+                                <div class="game-process">{{ item.highest }}</div>
                             </div>
                         </van-grid-item>
                     </van-grid>
                 </div>
-                <div class="game-desc-item">您玩的最好玩的游戏是：<span>消消乐</span></div>
-                <div class="game-desc-item">成功闯到了：<span>第十关</span></div>
-                <div class="game-desc-item">最快通过的关卡是：<span>第一关</span></div>
+                <div class="game-desc-item">
+                    您玩的最好玩的游戏是：<span>{{ userInfo.best_game }}</span>
+                </div>
+                <div class="game-desc-item">
+                    成功闯到了：<span>{{ userInfo.best_level }}</span>
+                </div>
+                <div class="game-desc-item">
+                    最快通过的关卡是：<span>{{ userInfo.fastest_leven }}</span>
+                </div>
             </div>
         </div>
     </van-dialog>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, computed } from 'vue';
 import { useAppStore } from '@/store';
 import { useRoute, useRouter } from 'vue-router';
 defineProps({});
@@ -49,6 +62,11 @@ defineProps({});
  * 仓库
  */
 const store = useAppStore();
+
+const userInfo = computed(() => {
+    return store.state.user;
+});
+
 /**
  * 路由对象
  */

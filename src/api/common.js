@@ -41,8 +41,16 @@ export const getWrongBookList = data => {
 // login
 export const requestForToken = code => {
     return serviceAxios({
-        url: '/index/login',
+        url: '/index/loginRes',
         method: 'post',
         data: { code }
+    });
+};
+// 用记详情
+export const getmMemberInfo = data => {
+    return serviceAxios({
+        url: '/index/memberInfo',
+        method: 'post',
+        data
     });
 };

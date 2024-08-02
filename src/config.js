@@ -16,10 +16,14 @@ export const getCode = async () => {
         window.location.href = url;
     } else {
         //获取到code传递给后端获取token
-        await getToken(_code);
+        if (!localStorage.getItem('user')) {
+            await getToken(_code);
+        }
     }
 };
 const getToken = code => {
     // 调用后端接口
-    api.requestForToken(code).then(res => {});
+    api.requestForToken(code).then(res => {
+        localStorage.setItem('user', JSON.stringify(res.data));
+    });
 };
