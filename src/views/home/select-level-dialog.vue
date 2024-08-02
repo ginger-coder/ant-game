@@ -134,8 +134,9 @@ const handleGrade = (actions, index) => {
     activeGrade.value = actions;
 };
 
-const init = (member_id = 1) => {
+const init = () => {
     visible.value = true;
+    const member_id = store.state.user.id;
     store.getLevelList(member_id);
 };
 

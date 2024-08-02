@@ -171,7 +171,7 @@ const handleNext = () => {
 
 const submitGameData = type => {
     api.handelLevelSubmit({
-        member_id: 1,
+        member_id: store.state.user.id,
         level_id: Number(levelData.value.level_id),
         grade_id: Number(levelData.value.grade_id),
         difficulty_id: Number(levelData.value.difficulty_id),

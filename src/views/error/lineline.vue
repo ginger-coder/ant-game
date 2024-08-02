@@ -69,7 +69,7 @@ const chineseList = ref([]);
 
 const init = () => {
     api.getWrongBook({
-        member_id: 1
+        member_id: store.state.user.id
     }).then(res => {
         chineseList.value = res.data.map(item => {
             item.active = false;
