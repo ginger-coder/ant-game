@@ -341,3 +341,31 @@ export const getQueryVariable = variable => {
 export const getAssetsFile = url => {
     return new URL(`../assets/images/${url}`, import.meta.url).href;
 };
+
+const shuffleArray = array => {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+};
+
+export const dynamicChunkArrayWithMaxSize = (data, maxSize) => {
+    const shuffledData = shuffleArray([...data]);
+    const result = [];
+    const totalLength = shuffledData.length;
+
+    // 动态计算需要的子数组数量
+    const numChunks = Math.ceil(totalLength / maxSize);
+
+    const chunkSize = Math.floor(totalLength / numChunks);
+    const remainder = totalLength % numChunks;
+
+    let start = 0;
+    for (let i = 0; i < numChunks; i++) {
+        let end = start + chunkSize + (i < remainder ? 1 : 0);
+        result.push(shuffledData.slice(start, end));
+        start = end;
+    }
+    return result;
+};

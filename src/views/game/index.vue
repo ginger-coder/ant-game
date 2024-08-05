@@ -65,17 +65,7 @@
                     </template>
                 </div>
                 <div class="game-content-desc">选择偏旁和部首组成一个汉字</div>
-                <div class="game-chinese-box">
-                    <div v-for="item in chineseList" :key="item.uid" class="game-chinese-item">
-                        <div
-                            class="game-chinese-item-c"
-                            :class="{ active: item.active }"
-                            @click="handleChineseItemClick(item)"
-                        >
-                            {{ item.name }}
-                        </div>
-                    </div>
-                </div>
+                <line-game :data="chineseList" />
             </div>
         </div>
         <game-over-dialog ref="gameOverDialogRef" :type="gameType" @callback="handleNext(0)" />
@@ -86,6 +76,8 @@
 <script setup>
 import gameOverDialog from './game-over-dialog.vue';
 import gamePassDialog from './game-pass-dialog.vue';
+import lineGame from './line.vue';
+import { getUserInfo } from '@/utils/cache';
 import { ref, reactive, onMounted, getCurrentInstance, watch, computed, onDeactivated } from 'vue';
 import { useAppStore } from '@/store';
 import { useRoute, useRouter } from 'vue-router';
@@ -171,7 +163,7 @@ const handleNext = () => {
 
 const submitGameData = type => {
     api.handelLevelSubmit({
-        member_id: store.state.user.id,
+        member_id: userInfo.value.id,
         level_id: Number(levelData.value.level_id),
         grade_id: Number(levelData.value.grade_id),
         difficulty_id: Number(levelData.value.difficulty_id),
@@ -290,6 +282,7 @@ const onGameTimeEnd = () => {
 
 const gameInfo = data => {
     api.getLevelInfo({
+        memberid: userInfo.value.id,
         level_id: data.level_id,
         grade_id: data.grade_id,
         difficulty_id: data.difficulty_id
@@ -303,6 +296,7 @@ const gameInfo = data => {
                       return item;
                   })
                 : [];
+
             tipInfo.value = res.data;
             if (res.data.time_limit === 0) {
                 remainderTime.value = 100;
@@ -333,6 +327,11 @@ const workInfo = data => {
         }, 500);
     });
 };
+
+const userInfo = computed(() => {
+    return getUserInfo();
+});
+
 watch(
     () => route.query,
     data => {
@@ -344,7 +343,7 @@ watch(
             levelData.value = data;
             gameInfo(data);
             if (!store.state.levels.length) {
-                store.getLevelList(store.state.user.id);
+                store.getLevelList(userInfo.value.id);
             }
         }
     },
