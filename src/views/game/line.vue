@@ -6,15 +6,15 @@
 <template>
     <div class="game-chinese-box">
         <div
-            v-for="(row, x) in board"
-            :key="x"
+            v-for="(row, y) in board"
+            :key="y"
             class="game-chinese-row"
             :style="{ width: 50 * row.length + 'px' }"
         >
             <div
-                v-for="(item, y) in row"
-                :key="y"
-                :style="{ left: y * 50 + 'px' }"
+                v-for="(item, x) in row"
+                :key="x"
+                :style="{ left: x * 50 + 'px' }"
                 class="game-chinese-item"
             >
                 <div
@@ -68,10 +68,7 @@ let firstClick = null;
 let secondClick = null;
 
 const handleChineseItemClick = (x, y) => {
-    console.log('x, y', x, y);
-    console.log('board.value', board.value[x][y]);
-
-    if (!board.value[x][y]) {
+    if (!board.value[y][x]) {
         return;
     } // Ignore if the cell is already empty
     if (!firstClick) {
@@ -79,14 +76,12 @@ const handleChineseItemClick = (x, y) => {
     } else if (!secondClick) {
         secondClick = { x, y };
         if (
-            board.value[firstClick.x][firstClick.y].id ===
-            board.value[secondClick.x][secondClick.y].id
+            board.value[firstClick.y][firstClick.x].id ===
+            board.value[secondClick.y][secondClick.x].id
         ) {
             if (isMatch(board.value, firstClick, secondClick)) {
-                board.value[firstClick.x][firstClick.y] = null;
-                board.value[secondClick.x][secondClick.y] = null;
-
-                console.log('board.value[firstClick.x][firstClick.y]', board.value);
+                board.value[firstClick.y][firstClick.x] = null;
+                board.value[secondClick.y][secondClick.x] = null;
 
                 // Check if the game is over
                 if (isGameOver(board.value)) {
@@ -113,7 +108,7 @@ const canConnectDirectly = (board, firstClick, secondClick) => {
                 ? [firstClick.y, secondClick.y]
                 : [secondClick.y, firstClick.y];
         for (let i = start + 1; i < end; i++) {
-            if (board[firstClick.x][i]) {
+            if (board[i][firstClick.x]) {
                 return false;
             }
         }
@@ -125,7 +120,7 @@ const canConnectDirectly = (board, firstClick, secondClick) => {
                 ? [firstClick.x, secondClick.x]
                 : [secondClick.x, firstClick.x];
         for (let i = start + 1; i < end; i++) {
-            if (board[i][firstClick.y]) {
+            if (board[firstClick.y][i]) {
                 return false;
             }
         }
