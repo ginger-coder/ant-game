@@ -36,10 +36,11 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, getCurrentInstance } from 'vue';
+import { ref, reactive, onMounted, getCurrentInstance, computed } from 'vue';
 import { useAppStore } from '@/store';
 import { useRoute, useRouter } from 'vue-router';
 import api from '@/api';
+import { getUserInfo } from '@/utils/cache';
 import { v4 as uuidv4 } from 'uuid';
 const { proxy } = getCurrentInstance();
 defineProps({});
@@ -67,9 +68,13 @@ const handleChineseClick = item => {
 
 const chineseList = ref([]);
 
+const userInfo = computed(() => {
+    return getUserInfo();
+});
+
 const init = () => {
     api.getWrongBook({
-        member_id: store.state.user.id
+        member_id: userInfo.value.id
     }).then(res => {
         chineseList.value = res.data.map(item => {
             item.active = false;
@@ -156,6 +161,7 @@ onMounted(() => {
     flex-wrap: wrap;
     width: 100%;
     height: calc(100% - 350px);
+    overflow-y: auto;
     .chinese-item {
         padding: 0 5px;
         margin-bottom: 12px;

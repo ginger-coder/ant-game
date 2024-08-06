@@ -38,14 +38,19 @@
                 </div>
                 <!-- 关卡列表 -->
                 <div class="level-list-box">
-                    <div v-for="(item, index) in level_number" :key="item" class="level-item">
+                    <div
+                        v-for="(item, index) in level_number"
+                        :key="item"
+                        class="level-item"
+                        @click="handelStart(item)"
+                    >
                         <img :src="getAssetsFile(`icon-level-${index + 1}.png`)" alt="" />
                     </div>
                 </div>
             </div>
-            <div class="level-game-start" @click="handelStart">
+            <!-- <div class="level-game-start" @click="handelStart">
                 <img src="@/assets/images/icon-btn-start.png" alt="" />
-            </div>
+            </div> -->
         </div>
     </van-dialog>
 </template>
@@ -101,26 +106,20 @@ const level_number = computed(() => {
 });
 const visible = ref(false);
 
-const getLevelId = () => {
-    for (let i = 0; i < level_number.value.length; i++) {
-        const el = level_number.value[i];
-        if (!el.is_pass) {
-            return level_number.value[i].id;
-        }
-    }
-    return false;
+const getLevelId = id => {
+    const targetLevel = level_number.value.find(item => item.id === id);
+    return targetLevel.is_pass;
 };
 
-const handelStart = () => {
-    const level_id = getLevelId();
-    if (!level_id) {
-        proxy.$showToast('恭喜，小朋友你已经通关啦~');
+const handelStart = level => {
+    if (!getLevelId(level.id)) {
+        proxy.$showToast('请先完成上一关哦~');
         return;
     }
     router.push({
         name: 'game',
         query: {
-            level_id,
+            level_id: level.id,
             grade_id: activeGrade.value.id,
             difficulty_id: activeLevel.value.id
         }

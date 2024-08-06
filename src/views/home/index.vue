@@ -26,16 +26,19 @@
                 </div>
             </div>
             <div class="home-game-box">
-                <div class="game-title">
-                    <img src="@/assets/images/icon-lineline-title.png" alt="" />
-                </div>
-                <div class="game-icon" @click="handleSelectLevel">
-                    <img src="@/assets/images/icon-lineline.png" alt="" />
-                </div>
+                <van-swipe :show-indicators="false" width="375">
+                    <van-swipe-item v-for="item in game_list" :key="item.id">
+                        <div class="game-item">
+                            <div class="game-title">
+                                {{ item.name }}
+                            </div>
+                            <div class="game-icon" @click="handleSelectLevel(item.id)">
+                                <img :src="item.image" alt="" />
+                            </div>
+                        </div>
+                    </van-swipe-item>
+                </van-swipe>
             </div>
-            <!-- <div class="game-start-box">
-                <img src="@/assets/images/icon-btn-start.png" alt="" />
-            </div> -->
         </div>
         <ant-filter-blur />
         <select-level-dialog ref="levelDialogRef" />
@@ -44,13 +47,14 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, computed } from 'vue';
+import { ref, reactive, onMounted, computed, getCurrentInstance } from 'vue';
 import { useAppStore } from '@/store';
 import { useRoute, useRouter } from 'vue-router';
 import selectLevelDialog from './select-level-dialog.vue';
 import personalCenterDialog from './personal-center-dialog.vue';
 import { getUserInfo } from '@/utils/cache';
 import api from '@/api';
+const { proxy } = getCurrentInstance();
 defineProps({});
 /**
  * 仓库
@@ -70,6 +74,10 @@ const userInfo = computed(() => {
     return getUserInfo();
 });
 
+const game_list = computed(() => {
+    return store.state.user.game_list || [];
+});
+
 const init = () => {
     store.setUserInfo(userInfo.value.id);
 };
@@ -79,7 +87,11 @@ const init = () => {
  */
 const levelDialogRef = ref();
 
-const handleSelectLevel = () => {
+const handleSelectLevel = id => {
+    if (id !== 1) {
+        proxy.$showToast('游戏暂未开放');
+        return;
+    }
     levelDialogRef.value.init();
 };
 
@@ -160,19 +172,18 @@ onMounted(() => {
         }
     }
     .home-game-box {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
         padding-top: 42px;
+        .game-item {
+            width: 200px;
+            margin: 0 auto;
+        }
         .game-title {
-            width: 93px;
-            height: 42px;
-            margin-bottom: 33px;
-            img {
-                width: 100%;
-                height: 100%;
-            }
+            width: 100%;
+            padding: 12px 0;
+            text-align: center;
+            color: #fff;
+            font-size: 28px;
+            -webkit-text-stroke: 1px #694800;
         }
         .game-icon {
             width: 188px;

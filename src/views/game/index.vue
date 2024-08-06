@@ -64,8 +64,13 @@
                         </div>
                     </template>
                 </div>
-                <div class="game-content-desc">选择偏旁和部首组成一个汉字</div>
-                <line-game :data="chineseList" />
+                <!-- <div class="game-content-desc">选择偏旁和部首组成一个汉字</div> -->
+                <line-game
+                    :data="chineseList"
+                    @error="handleErrorClick"
+                    @other="handleOther"
+                    @finish="handleFinish"
+                />
             </div>
         </div>
         <game-over-dialog ref="gameOverDialogRef" :type="gameType" @callback="handleNext(0)" />
@@ -74,6 +79,7 @@
 </template>
 
 <script setup>
+import _ from 'lodash';
 import gameOverDialog from './game-over-dialog.vue';
 import gamePassDialog from './game-pass-dialog.vue';
 import lineGame from './line.vue';
@@ -83,6 +89,7 @@ import { useAppStore } from '@/store';
 import { useRoute, useRouter } from 'vue-router';
 import api from '@/api';
 import { v4 as uuidv4 } from 'uuid';
+import { uniqueJsonArrByField } from '@/utils';
 const { proxy } = getCurrentInstance();
 import cnchar from 'cnchar';
 import 'cnchar-radical';
@@ -161,7 +168,30 @@ const handleNext = () => {
     }
 };
 
+const handleErrorClick = item => {
+    errorNum.value.push(item);
+};
+
+const handleFinish = () => {
+    finishTiming();
+    gamePassDialogRef.value.init();
+    if (!route.query.workbook) {
+        submitGameData(1);
+    }
+};
+
 const submitGameData = type => {
+    isFinish.value = true;
+    let rightArr = uniqueJsonArrByField(
+        chineseList.value.filter(item => {
+            const target = errorNum.value.findIndex(el => el.id === item.id);
+            if (target === -1) {
+                return true;
+            }
+            return false;
+        }),
+        'id'
+    );
     api.handelLevelSubmit({
         member_id: userInfo.value.id,
         level_id: Number(levelData.value.level_id),
@@ -169,9 +199,9 @@ const submitGameData = type => {
         difficulty_id: Number(levelData.value.difficulty_id),
         duration: type ? startTime : '',
         false_num: errorNum.value.length,
-        true_num: chineseList.value.length - errorNum.value.length,
+        true_num: rightArr.length,
         status: type ? 1 : 2,
-        true_character: rightNum.value.map(el => el.id).join(','),
+        true_character: rightArr.map(el => el.id).join(','),
         false_character: errorNum.value.map(el => el.id).join(',')
     }).then(() => {
         // 清空计时--0秒
@@ -181,7 +211,7 @@ const submitGameData = type => {
 
 const remainderTime = ref(0);
 const countDownTimer = computed(() => {
-    return tipInfo.value.time_limit * 1000;
+    return tipInfo.value.time_limit * 1000 * 60;
 });
 const onTimeChange = val => {
     const remain = countDownTimer.value - val.total;
@@ -190,45 +220,13 @@ const onTimeChange = val => {
 
 const chineseItemInfo = ref({});
 
-const isFinish = computed(() => {
-    return chineseList.value.every(item => item.active);
-});
+const isFinish = ref(false);
 
-watch(
-    () => chineseList.value,
-    newList => {
-        if (isFinish.value) {
-            // game over dialog
-            finishTiming();
-            gamePassDialogRef.value.init();
-            if (!route.query.workbook) {
-                submitGameData(1);
-            }
-        }
-        otherNum.value = newList.filter(item => !item.active);
-    },
-    {
-        deep: true
-    }
-);
+const handleOther = arr => {
+    otherNum.value = _.cloneDeep(arr);
+};
 const start = () => {
     gameWaitRef.value && gameWaitRef.value.start();
-};
-
-// 点击文字逻辑
-const handleChineseItemClick = item => {
-    if (item.active) {
-        return false;
-    }
-    chineseList.value = chineseList.value.map(el => {
-        if (el.uid === item.uid) {
-            const isRight = determineChineseSame(el);
-            if (isRight) {
-                el.active = true;
-            }
-        }
-        return el;
-    });
 };
 
 const chineseInfoTimer = ref(null);
@@ -237,31 +235,6 @@ const startShowChineseInfo = () => {
         chineseItemInfo.value = {};
         clearTimeout(chineseInfoTimer.value);
     }, 5000);
-};
-
-const determineChineseSame = el => {
-    let falg = false;
-    if (selectChinese.value.length < 2) {
-        selectChinese.value.push(el);
-        falg = true;
-    }
-    if (selectChinese.value.length === 2) {
-        if (selectChinese.value[0].id === selectChinese.value[1].id) {
-            chineseItemInfo.value = Object.assign(selectChinese.value[0], {
-                radical: cnchar.radical(selectChinese.value[0].name)[0].radical
-            });
-            startShowChineseInfo();
-            falg = true;
-            rightNum.value.push(selectChinese.value[0]);
-            selectChinese.value = [];
-        } else {
-            falg = false;
-            selectChinese.value.pop();
-            errorNum.value.push(selectChinese.value[0]);
-            proxy.$showToast('选错了哦~');
-        }
-    }
-    return falg;
 };
 
 const onGameTimeEnd = () => {
@@ -296,7 +269,7 @@ const gameInfo = data => {
                       return item;
                   })
                 : [];
-
+            otherNum.value = _.cloneDeep(chineseList.value);
             tipInfo.value = res.data;
             if (res.data.time_limit === 0) {
                 remainderTime.value = 100;
@@ -320,7 +293,7 @@ const workInfo = data => {
             el.uid = uuidv4();
             return el;
         });
-        console.log('chineseList', chineseList.value);
+        otherNum.value = _.cloneDeep(chineseList.value);
         tipInfo.value.level_name = '练习';
         workTimer.value = setTimeout(() => {
             start();
@@ -455,7 +428,7 @@ onDeactivated(() => {
 }
 
 .game-area-box {
-    padding-top: 18px;
+    padding-top: 12px;
 }
 .game-content {
     .game-tip-top {

@@ -350,22 +350,78 @@ const shuffleArray = array => {
     return array;
 };
 
-export const dynamicChunkArrayWithMaxSize = (data, maxSize) => {
+export const dynamicChunkArrayWithMaxSize = data => {
     const shuffledData = shuffleArray([...data]);
+    // 动态计算目标子数组的数量
+    const totalElements = shuffledData.length;
+    const numberOfSubArrays = Math.ceil(Math.sqrt(totalElements));
+
+    // 计算每个子数组的基础大小和剩余元素
+    const baseSize = Math.floor(totalElements / numberOfSubArrays);
+    const remainder = totalElements % numberOfSubArrays;
+
     const result = [];
-    const totalLength = shuffledData.length;
+    let index = 0;
 
-    // 动态计算需要的子数组数量
-    const numChunks = Math.ceil(totalLength / maxSize);
-
-    const chunkSize = Math.floor(totalLength / numChunks);
-    const remainder = totalLength % numChunks;
-
-    let start = 0;
-    for (let i = 0; i < numChunks; i++) {
-        let end = start + chunkSize + (i < remainder ? 1 : 0);
-        result.push(shuffledData.slice(start, end));
-        start = end;
+    // 分割数组
+    for (let i = 0; i < numberOfSubArrays; i++) {
+        const currentSubArraySize = baseSize + (i < remainder ? 1 : 0);
+        result.push(shuffledData.slice(index, index + currentSubArraySize));
+        index += currentSubArraySize;
     }
+
     return result;
 };
+
+/*
+ * json数组去重
+ * @param: {Array} jsonArr 去重之前的数组
+ * @param  {String} field  需要去重的字段值
+ * @return {Array}        去重之后的数组
+ */
+export function uniqueJsonArrByField(jsonArr, field) {
+    // 数组长度小于2 或 没有指定去重字段 或 不是json格式数据
+    if (jsonArr.length < 2 || !field || typeof jsonArr[0] !== 'object') return jsonArr;
+    const uniqueArr = jsonArr.reduce(
+        (all, next) => (all.some(item => item[field] == next[field]) ? all : [...all, next]),
+        []
+    );
+    return uniqueArr;
+}
+
+/**
+ * 随机打乱数组中的所有非 null 元素，同时保留 null 元素的位置不变
+ * @param {Array<Array>} matrix - 二维数组
+ * @return {Array<Array>} - 乱序后的二维数组
+ */
+export function shuffleMatrix(matrix) {
+    // 提取所有非 null 元素
+    const elements = [];
+    matrix.forEach(row => {
+        row.forEach(item => {
+            if (item !== null) {
+                elements.push(item);
+            }
+        });
+    });
+
+    // 随机打乱非 null 元素
+    for (let i = elements.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [elements[i], elements[j]] = [elements[j], elements[i]];
+    }
+
+    // 将乱序后的元素放回原来的位置
+    const result = matrix.map(row => row.slice());
+    let index = 0;
+
+    result.forEach((row, rIdx) => {
+        row.forEach((item, cIdx) => {
+            if (item !== null) {
+                result[rIdx][cIdx] = elements[index++];
+            }
+        });
+    });
+
+    return result;
+}
