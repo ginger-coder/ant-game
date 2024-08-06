@@ -33,9 +33,9 @@
                         </template>
                     </van-popover>
                 </div>
-                <div class="level-tip">
+                <!-- <div class="level-tip">
                     选择合适的偏旁和部首，组成一个汉字进行消除，加油！胜利在等着你
-                </div>
+                </div> -->
                 <!-- 关卡列表 -->
                 <div class="level-list-box">
                     <div
@@ -107,6 +107,10 @@ const level_number = computed(() => {
 const visible = ref(false);
 
 const getLevelId = id => {
+    const targetIndex = level_number.value.findIndex(item => item.id === id);
+    if (targetIndex === 0) {
+        return true;
+    }
     const targetLevel = level_number.value.find(item => item.id === id);
     return targetLevel.is_pass;
 };
@@ -161,6 +165,7 @@ defineExpose({ init });
         border-radius: 8px;
         align-items: center;
         justify-content: center;
+        margin-bottom: 10px;
         .level-grade-icon {
             width: 24px;
             height: 24px;
