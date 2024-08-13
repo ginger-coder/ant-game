@@ -54,7 +54,10 @@
                                 </div>
                             </div>
                             <div class="chinese-other">
-                                <div class="chinese-audio">
+                                <div
+                                    class="chinese-audio"
+                                    @click="handlePalyAudio(chineseItemInfo.file)"
+                                >
                                     <img src="@/assets/images/icon-audio.png" width="16px" alt="" />
                                 </div>
                                 <div class="chinese-num chinese-font">
@@ -77,6 +80,7 @@
         </div>
         <game-over-dialog ref="gameOverDialogRef" :type="gameType" @callback="handleNext(0)" />
         <game-pass-dialog ref="gamePassDialogRef" :type="gameType" @callback="handleNext(1)" />
+        <audio ref="audioRef" style="width: 0; height: 0"></audio>
     </div>
 </template>
 
@@ -135,6 +139,14 @@ const otherNum = ref([]);
 
 let startTime = 0;
 let timing = null;
+
+const audioRef = ref();
+const handlePalyAudio = url => {
+    audioRef.value.src = url;
+    // 播放 暂停也同理
+    audioRef.value.play();
+};
+
 const startTiming = () => {
     timing = setInterval(() => {
         startTime++;
