@@ -9,7 +9,6 @@
             <img src="@/assets/images/refresh.png" width="40" alt="" />
         </div>
         <div class="game-chinese-box" :style="{ width: 40 * board[0].length + 'px' }">
-            <canvas ref="linkCanvas" class="game-chinese-canvas"></canvas>
             <div
                 v-for="(row, x) in board"
                 :key="x"
@@ -185,13 +184,8 @@ const handleChineseItemClick = (x, y) => {
                 }
             }
         } else {
-            if (
-                board.value[firstClick.x][firstClick.y].uid !==
-                board.value[secondClick.x][secondClick.y].uid
-            ) {
-                isErrorId.value = board.value[secondClick.x][secondClick.y].uid;
-                emits('error', board.value[firstClick.x][firstClick.y]);
-            }
+            isErrorId.value = board.value[secondClick.x][secondClick.y].uid;
+            emits('error', board.value[firstClick.x][firstClick.y]);
         }
         firstClick = null;
         secondClick = null;

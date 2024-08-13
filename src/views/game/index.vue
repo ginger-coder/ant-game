@@ -246,9 +246,11 @@ const start = () => {
 const chineseInfoTimer = ref(null);
 const startShowChineseInfo = chinese => {
     clearTimeout(chineseInfoTimer.value);
+    audioRef.value.pause();
     chineseItemInfo.value = _.cloneDeep(chinese);
     chineseInfoTimer.value = setTimeout(() => {
         chineseItemInfo.value = {};
+        audioRef.value.pause();
         clearTimeout(chineseInfoTimer.value);
     }, 5000);
 };
