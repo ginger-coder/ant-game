@@ -67,9 +67,11 @@
                 <!-- <div class="game-content-desc">选择偏旁和部首组成一个汉字</div> -->
                 <line-game
                     :data="chineseList"
+                    :refresh="tolerance"
                     @error="handleErrorClick"
                     @other="handleOther"
                     @finish="handleFinish"
+                    @success="startShowChineseInfo"
                 />
             </div>
         </div>
@@ -230,7 +232,9 @@ const start = () => {
 };
 
 const chineseInfoTimer = ref(null);
-const startShowChineseInfo = () => {
+const startShowChineseInfo = chinese => {
+    clearTimeout(chineseInfoTimer.value);
+    chineseItemInfo.value = _.cloneDeep(chinese);
     chineseInfoTimer.value = setTimeout(() => {
         chineseItemInfo.value = {};
         clearTimeout(chineseInfoTimer.value);
@@ -253,6 +257,8 @@ const onGameTimeEnd = () => {
     }
 };
 
+const tolerance = ref(0);
+
 const gameInfo = data => {
     api.getLevelInfo({
         memberid: userInfo.value.id,
@@ -262,6 +268,7 @@ const gameInfo = data => {
     }).then(res => {
         if (res.data.characters.length) {
             start();
+            tolerance.value = res.data.tolerance;
             chineseList.value = res.data.characters
                 ? res.data.characters.map(item => {
                       item.active = false;

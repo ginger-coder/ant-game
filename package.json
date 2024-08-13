@@ -9,6 +9,7 @@
         "serve": "vite preview"
     },
     "dependencies": {
+        "animate.css": "^4.1.1",
         "axios": "^1.4.0",
         "cnchar": "^3.2.6",
         "cnchar-draw": "^3.2.6",

@@ -5,8 +5,11 @@
 -->
 <template>
     <div class="game-content">
-        <div class="reload" @click="refresh">刷新</div>
-        <div class="game-chinese-box">
+        <div v-if="refreshNum > 0" class="reload" @click="handleRefresh">
+            <img src="@/assets/images/refresh.png" width="40" alt="" />
+        </div>
+        <div class="game-chinese-box" :style="{ width: 40 * board[0].length + 'px' }">
+            <canvas ref="linkCanvas" class="game-chinese-canvas"></canvas>
             <div
                 v-for="(row, x) in board"
                 :key="x"
@@ -21,8 +24,8 @@
                 >
                     <div
                         v-if="cell"
-                        class="game-chinese-item-c"
-                        :class="{ active: cell.active }"
+                        class="game-chinese-item-c animate__animated"
+                        :class="{ active: cell.active, animate__headShake: isErrorId == cell.uid }"
                         @click="() => handleChineseItemClick(x, y)"
                     >
                         {{ cell.name }}
@@ -41,7 +44,8 @@ import { useAppStore } from '@/store';
 import { useRoute, useRouter } from 'vue-router';
 import { dynamicChunkArrayWithMaxSize, shuffleMatrix } from '@/utils';
 const props = defineProps({
-    data: { type: Array, default: () => [] }
+    data: { type: Array, default: () => [] },
+    refresh: { type: Number, default: 0 }
 });
 
 const emits = defineEmits(['error', 'finish', 'success', 'other']);
@@ -60,7 +64,27 @@ const router = useRouter();
 
 const board = ref([]);
 
-const refresh = () => {
+const refreshNum = ref(0);
+
+const isErrorId = ref(null);
+
+watch(
+    () => props.refresh,
+    value => {
+        refreshNum.value = value;
+    },
+    {
+        immediate: true
+    }
+);
+
+const handleRefresh = () => {
+    if (refreshNum.value <= 0) {
+        proxy.$showToast('刷新机会已经用完咯~');
+        return;
+    }
+    refreshNum.value = refreshNum.value - 1;
+    proxy.$showToast('刷新机会还有' + refreshNum.value + '次哦~');
     board.value = shuffleMatrix(board.value);
 };
 
@@ -83,18 +107,58 @@ watch(
     }
 );
 
+const linkCanvas = ref();
+
+const drawLine = path => {
+    const canvas = linkCanvas.value;
+    const ctx = canvas.getContext('2d');
+    if (!path || path.length < 3) return;
+
+    const blockSize = 40; // 假设每个块的尺寸是 50x50 像素
+    const offset = blockSize / 2; // 获取中心点偏移量
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // 每次绘制前清除之前的线条
+
+    ctx.beginPath();
+    ctx.strokeStyle = 'red'; // 设置线条颜色
+    ctx.lineWidth = 2; // 设置线条宽度
+
+    for (let i = 0; i < path.length - 1; i++) {
+        const startX = path[i].y * blockSize + offset;
+        const startY = path[i].x * blockSize + offset;
+        const endX = path[i + 1].y * blockSize + offset;
+        const endY = path[i + 1].x * blockSize + offset;
+
+        ctx.moveTo(startX, startY);
+        ctx.lineTo(endX, endY);
+    }
+
+    ctx.stroke();
+};
+
 const size = 6;
 
 let firstClick = null;
 let secondClick = null;
+// 清空选择
+const clearAllActive = () => {
+    board.value.forEach(row => {
+        row.forEach(cell => {
+            if (cell) {
+                cell.active = false;
+            }
+        });
+    });
+};
 
 const handleChineseItemClick = (x, y) => {
     if (!board.value[x][y]) {
         return;
     } // Ignore if the cell is already empty
-
     if (!firstClick) {
+        clearAllActive();
         firstClick = { x, y };
+        board.value[firstClick.x][firstClick.y].active = true;
     } else if (!secondClick) {
         secondClick = { x, y };
         if (
@@ -103,8 +167,14 @@ const handleChineseItemClick = (x, y) => {
             board.value[firstClick.x][firstClick.y].uid !==
                 board.value[secondClick.x][secondClick.y].uid
         ) {
-            emits('success', board.value[firstClick.x][firstClick.y]);
-            if (canLink(board.value, firstClick, secondClick)) {
+            const isCanLink = canLink(board.value, firstClick, secondClick);
+            if (isCanLink) {
+                // active
+                board.value[secondClick.x][secondClick.y].active = true;
+                // 绘制线路
+                // drawLine(pathList);
+                emits('success', board.value[firstClick.x][firstClick.y]);
+
                 board.value[firstClick.x][firstClick.y] = null;
                 board.value[secondClick.x][secondClick.y] = null;
                 other();
@@ -119,6 +189,7 @@ const handleChineseItemClick = (x, y) => {
                 board.value[firstClick.x][firstClick.y].uid !==
                 board.value[secondClick.x][secondClick.y].uid
             ) {
+                isErrorId.value = board.value[secondClick.x][secondClick.y].uid;
                 emits('error', board.value[firstClick.x][firstClick.y]);
             }
         }
@@ -128,7 +199,7 @@ const handleChineseItemClick = (x, y) => {
 };
 
 /**
- * 判断连连看游戏中的两个方块是否可以通过不超过两个直线（最多一个拐点）相连
+ * 判断连连看游戏中的两个方块是否可以通过不超过两个直线（最多2个拐点）相连
  * @param {Array<Array>} board - 游戏板的二维数组
  * @param {Object} start - 起始方块的位置 {x, y}
  * @param {Object} end - 目标方块的位置 {x, y}
@@ -139,27 +210,30 @@ function canLink(board, start, end) {
     const cols = board[0].length;
 
     if (board[start.x][start.y] === null || board[end.x][end.y] === null) {
-        return false;
+        return null;
     }
 
     const directions = [
-        { dx: -1, dy: 0 }, // up
-        { dx: 1, dy: 0 }, // down
-        { dx: 0, dy: -1 }, // left
-        { dx: 0, dy: 1 } // right
+        { dx: -1, dy: 0 }, // 上
+        { dx: 1, dy: 0 }, // 下
+        { dx: 0, dy: -1 }, // 左
+        { dx: 0, dy: 1 } // 右
     ];
 
-    const queue = [[start, -1, 0]]; // [current position, last direction, turn count]
+    const queue = [[start, -1, 0, []]]; // [当前位置, 上一次移动的方向, 转弯次数, 路径点数组]
     const visited = Array(rows)
         .fill()
         .map(() => Array(cols).fill(false));
     visited[start.x][start.y] = true;
 
     while (queue.length > 0) {
-        const [current, lastDirection, turns] = queue.shift();
+        const [current, lastDirection, turns, path] = queue.shift();
+        const newPath = [...path, current];
 
-        if (turns > 2) continue; // More than 2 turns are not allowed
-        if (current.x === end.x && current.y === end.y) return true;
+        if (turns > 3) continue; // 超过两次拐弯的路径不考虑
+        if (current.x === end.x && current.y === end.y) {
+            return newPath; // 找到路径，返回路径数组
+        }
 
         for (let i = 0; i < directions.length; i++) {
             const newX = current.x + directions[i].dx;
@@ -174,85 +248,139 @@ function canLink(board, start, end) {
                 !visited[newX][newY]
             ) {
                 visited[newX][newY] = true;
-                queue.push([{ x: newX, y: newY }, i, i === lastDirection ? turns : turns + 1]);
+                queue.push([
+                    { x: newX, y: newY },
+                    i,
+                    i === lastDirection ? turns : turns + 1,
+                    newPath
+                ]);
             }
         }
     }
-
-    // 检查边界外绕过障碍物的情况
-    return checkBoundaryPath(board, start, end);
+    return canConnectOnSameBoundary(board, start, end);
 }
 
-/**
- * 检查从边界绕过障碍物是否可以连通
- * @param {Array<Array>} board - 游戏板的二维数组
- * @param {Object} start - 起始方块的位置 {x, y}
- * @param {Object} end - 目标方块的位置 {x, y}
- * @return {boolean} - 是否可以通过边界外路径匹配
- */
-function checkBoundaryPath(board, start, end) {
+function canConnectOnSameBoundary(board, start, end) {
     const rows = board.length;
     const cols = board[0].length;
 
-    // 检查通过左边界
-    if (
-        isClearPath(board, { x: start.x, y: 0 }, { x: end.x, y: 0 }) &&
-        isClearPath(board, { x: end.x, y: 0 }, end)
-    ) {
-        return true;
-    }
-
-    // 检查通过右边界
-    if (
-        isClearPath(board, { x: start.x, y: cols - 1 }, { x: end.x, y: cols - 1 }) &&
-        isClearPath(board, { x: end.x, y: cols - 1 }, end)
-    ) {
-        return true;
-    }
-
-    // 检查通过上边界
-    if (
-        isClearPath(board, { x: 0, y: start.y }, { x: 0, y: end.y }) &&
-        isClearPath(board, { x: 0, y: end.y }, end)
-    ) {
-        return true;
-    }
-
-    // 检查通过下边界
-    if (
-        isClearPath(board, { x: rows - 1, y: start.y }, { x: rows - 1, y: end.y }) &&
-        isClearPath(board, { x: rows - 1, y: end.y }, end)
-    ) {
-        return true;
-    }
-
-    return false;
-}
-
-/**
- * 检查两点之间是否有清晰的路径（不包含障碍物）
- * @param {Array<Array>} board - 游戏板的二维数组
- * @param {Object} start - 起始点的位置 {x, y}
- * @param {Object} end - 目标点的位置 {x, y}
- * @return {boolean} - 是否有清晰的路径
- */
-function isClearPath(board, start, end) {
+    // 如果在同一行（上边界或下边界）
     if (start.x === end.x) {
-        for (let y = Math.min(start.y, end.y); y <= Math.max(start.y, end.y); y++) {
-            if (board[start.x][y] !== null && !(start.x === end.x && y === end.y)) {
-                return false;
+        if (start.x === 0 || start.x === rows - 1) {
+            // 上边界或下边界
+            if (
+                noObstaclesInRow(board, start.x, Math.min(start.y, end.y), Math.max(start.y, end.y))
+            ) {
+                return createBoundaryPath(start, end, 'horizontal');
+            } else if (noObstaclesAboveOrBelow(board, start.x, start.y, end.y)) {
+                return createExtendedBoundaryPath(board, start, end, 'horizontal');
             }
         }
-    } else if (start.y === end.y) {
-        for (let x = Math.min(start.x, end.x); x <= Math.max(start.x, end.x); x++) {
-            if (board[x][start.y] !== null && !(x === end.x && start.y === end.y)) {
-                return false;
+    }
+    // 如果在同一列（左边界或右边界）
+    else if (start.y === end.y) {
+        if (start.y === 0 || start.y === cols - 1) {
+            // 左边界或右边界
+            if (
+                noObstaclesInColumn(
+                    board,
+                    start.y,
+                    Math.min(start.x, end.x),
+                    Math.max(start.x, end.x)
+                )
+            ) {
+                return createBoundaryPath(start, end, 'vertical');
+            } else if (noObstaclesLeftOrRight(board, start.y, start.x, end.x)) {
+                return createExtendedBoundaryPath(board, start, end, 'vertical');
             }
+        }
+    }
+
+    return null; // 无法连线消除
+}
+
+function createBoundaryPath(start, end, direction) {
+    const path = [];
+    const isHorizontal = direction === 'horizontal';
+
+    if (isHorizontal) {
+        const minY = Math.min(start.y, end.y);
+        const maxY = Math.max(start.y, end.y);
+        for (let y = minY; y <= maxY; y++) {
+            path.push({ x: start.x, y: y });
+        }
+    } else {
+        const minX = Math.min(start.x, end.x);
+        const maxX = Math.max(start.x, end.x);
+        for (let x = minX; x <= maxX; x++) {
+            path.push({ x: x, y: start.y });
+        }
+    }
+
+    return path;
+}
+
+function createExtendedBoundaryPath(board, start, end, direction) {
+    const path = [];
+    const rows = board.length;
+    const cols = board[0].length;
+    if (direction === 'horizontal') {
+        // 向上或向下绕行
+        if (start.x === 0) {
+            path.push({ x: -1, y: start.y });
+            path.push({ x: -1, y: end.y });
+        } else if (start.x === rows - 1) {
+            path.push({ x: rows, y: start.y });
+            path.push({ x: rows, y: end.y });
+        }
+    } else {
+        // 向左或向右绕行
+        if (start.y === 0) {
+            path.push({ x: start.x, y: -1 });
+            path.push({ x: end.x, y: -1 });
+        } else if (start.y === cols - 1) {
+            path.push({ x: start.x, y: cols });
+            path.push({ x: end.x, y: cols });
+        }
+    }
+
+    path.push(end);
+    return path;
+}
+
+function noObstaclesInRow(board, row, startCol, endCol) {
+    for (let col = startCol + 1; col < endCol; col++) {
+        if (board[row][col] !== null) {
+            return false;
         }
     }
     return true;
 }
 
+function noObstaclesInColumn(board, col, startRow, endRow) {
+    for (let row = startRow + 1; row < endRow; row++) {
+        if (board[row][col] !== null) {
+            return false;
+        }
+    }
+    return true;
+}
+
+function noObstaclesAboveOrBelow(board, row, startCol, endCol) {
+    const rows = board.length;
+    return (
+        (row === 0 && noObstaclesInRow(board, rows - 1, startCol, endCol)) ||
+        (row === rows - 1 && noObstaclesInRow(board, 0, startCol, endCol))
+    );
+}
+
+function noObstaclesLeftOrRight(board, col, startRow, endRow) {
+    const cols = board[0].length;
+    return (
+        (col === 0 && noObstaclesInColumn(board, cols - 1, startRow, endRow)) ||
+        (col === cols - 1 && noObstaclesInColumn(board, 0, startRow, endRow))
+    );
+}
 const isGameOver = board => {
     return board.every(row => row.every(cell => cell === null));
 };
@@ -263,17 +391,28 @@ const isGameOver = board => {
     padding: 10px 0;
     .reload {
         position: absolute;
-        right: 0;
+        right: 10px;
         top: -20px;
         color: #af6400;
     }
 }
 .game-chinese-box {
+    margin: 0 auto;
+    position: relative;
+    .game-chinese-canvas {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        z-index: 1;
+    }
     .game-chinese-row {
         position: relative;
         width: 100%;
         height: 40px;
-        margin: 0 auto;
+        z-index: 1;
     }
     .game-chinese-item {
         position: absolute;

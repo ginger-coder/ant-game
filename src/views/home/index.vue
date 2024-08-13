@@ -10,19 +10,16 @@
                 <div class="game-name">
                     <img src="@/assets/images/logo.png" width="116px" alt="" />
                 </div>
-                <div class="user-top">
+                <div class="user-top" @click="handleInfo">
                     <div class="user-avager">
                         <img :src="userInfo.avatar" alt="" />
                     </div>
-                    <div class="user-info" @click="handleInfo">
+                    <div class="user-info">
                         <div class="user-name">
                             <van-text-ellipsis :content="userInfo.nickname" />
                         </div>
                         <div class="user-data">识字数：56</div>
                     </div>
-                </div>
-                <div class="err-book" @click="handleErrBookClick">
-                    <img src="@/assets/images/icon-btn-error.png" alt="" />
                 </div>
             </div>
             <div class="home-game-box">
@@ -95,12 +92,6 @@ const handleSelectLevel = id => {
     levelDialogRef.value.init();
 };
 
-const handleErrBookClick = () => {
-    router.push({
-        name: 'error'
-    });
-};
-
 const personalCenterRef = ref();
 const handleInfo = () => {
     personalCenterRef.value.init();
@@ -160,14 +151,6 @@ onMounted(() => {
                     font-size: 10px;
                     color: #002b6b;
                 }
-            }
-        }
-        .err-book {
-            width: 48px;
-            height: 55px;
-            img {
-                width: 100%;
-                height: 100%;
             }
         }
     }

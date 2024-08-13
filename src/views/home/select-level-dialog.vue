@@ -78,16 +78,18 @@ const router = useRouter();
 
 const activeGrade = ref({
     id: 1,
-    text: '一年级'
+    text: '一单元'
 });
 const showGrade = ref(false);
 const gradeList = [
-    { text: '一年级', id: 1 },
-    { text: '二年级', id: 2 },
-    { text: '三年级', id: 3 },
-    { text: '四年级', id: 4 },
-    { text: '五年级', id: 5 },
-    { text: '六年级', id: 6 }
+    { text: '一单元', id: 1 },
+    { text: '二单元', id: 2 },
+    { text: '三单元', id: 3 },
+    { text: '四单元', id: 4 },
+    { text: '五单元', id: 5 },
+    { text: '六单元', id: 6 },
+    { text: '七单元', id: 7 },
+    { text: '八单元', id: 8 }
 ];
 
 const activeLevel = ref({

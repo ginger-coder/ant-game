@@ -9,6 +9,7 @@ import App from './App.vue';
 import { showToast, showDialog } from 'vant';
 import 'vant/es/toast/style';
 import 'vant/es/dialog/style';
+import 'animate.css';
 
 const app = createApp(App);
 const pinia = createPinia();

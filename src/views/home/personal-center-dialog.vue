@@ -70,6 +70,9 @@
                 </div>
                 <div class="mobile">客服电话：0350-5624584</div>
             </div>
+            <div class="err-book" @click="handleErrBookClick">
+                <img src="@/assets/images/icon-btn-error.png" alt="" />
+            </div>
         </div>
         <study-report-dialog ref="studyReportRef" />
     </van-dialog>
@@ -117,6 +120,12 @@ const route = useRoute();
  */
 const router = useRouter();
 
+const handleErrBookClick = () => {
+    router.push({
+        name: 'error'
+    });
+};
+
 const init = () => {
     visible.value = true;
 };
@@ -127,8 +136,17 @@ defineExpose({ init });
 :deep(.van-slider__bar) {
     box-shadow: inset -2px -2px 0px 0px #f58310;
 }
+.err-book {
+    width: 48px;
+    height: 53px;
+    margin: 0 auto;
+    img {
+        width: 100%;
+        height: 100%;
+    }
+}
 .personal-center-box {
-    height: 532px;
+    padding: 20px;
     width: 100%;
     background: #fdbc74;
     border-radius: 20px;
@@ -148,6 +166,7 @@ defineExpose({ init });
             text-align: center;
             font-size: 13px;
             color: #af6400;
+            margin-bottom: 10px;
         }
         .music-set-title {
             font-weight: 600;
