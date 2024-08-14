@@ -20,10 +20,41 @@ export const useAppStore = defineStore('useAppStore', {
                 full_avatar: ''
             },
             levels: [],
-            current_level: {}
+            current_level: {},
+            gradeList: [],
+            leveList: [],
+            gameList: []
         }
     }),
     actions: {
+        getManageInfo(type) {
+            // gametype, pattern, difficulty, grade
+            api.getinfoManage({
+                type
+            }).then(res => {
+                if (type === 'grade') {
+                    const newData = res.data.map(el => {
+                        return {
+                            text: el.name,
+                            id: el.id
+                        };
+                    });
+                    this.updateState({ gradeList: newData });
+                }
+                if (type === 'difficulty') {
+                    const newData = res.data.map(el => {
+                        return {
+                            text: el.name,
+                            id: el.id
+                        };
+                    });
+                    this.updateState({ leveList: newData });
+                }
+                if (type === 'gametype') {
+                    this.updateState({ gameList: res.data });
+                }
+            });
+        },
         getLevelList(member_id) {
             api.getLevelList({ member_id }).then(res => {
                 this.updateState({ levels: res.data });

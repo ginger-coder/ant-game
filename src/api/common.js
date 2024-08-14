@@ -54,3 +54,12 @@ export const getmMemberInfo = data => {
         data
     });
 };
+
+// 难易、年级
+export const getinfoManage = data => {
+    return serviceAxios({
+        url: '/index/infoManage',
+        method: 'post',
+        data
+    });
+};

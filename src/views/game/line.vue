@@ -202,14 +202,16 @@ const handleChineseItemClick = (x, y) => {
                         board.value[start_x][start_y] = null;
                         board.value[end_x][end_y] = null;
                         removeId.value = { first: null, second: null };
+                        other();
+                        // Check if the game is over
+                        if (isGameOver(board.value)) {
+                            emits('finish');
+                            console.log('Game Over');
+
+                            // 结束逻辑
+                        }
                     }, 500);
                 })(firstClick.x, firstClick.y, secondClick.x, secondClick.y);
-                other();
-                // Check if the game is over
-                if (isGameOver(board.value)) {
-                    emits('finish');
-                    // 结束逻辑
-                }
             }
         } else {
             isErrorId.value = board.value[secondClick.x][secondClick.y].uid;

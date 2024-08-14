@@ -17,7 +17,7 @@
                         @select="handleGrade"
                     >
                         <template #reference>
-                            <div class="select-item m5">{{ activeGrade.text }}</div>
+                            <div class="select-item m5">{{ activeGrade?.text }}</div>
                         </template>
                     </van-popover>
                     <div class="level-grade-icon m5">
@@ -56,7 +56,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, computed, getCurrentInstance } from 'vue';
+import { ref, reactive, onMounted, computed, getCurrentInstance, watch } from 'vue';
 import { useAppStore } from '@/store';
 import { useRoute, useRouter } from 'vue-router';
 import { getAssetsFile } from '@/utils';
@@ -76,36 +76,48 @@ const route = useRoute();
  */
 const router = useRouter();
 
-const activeGrade = ref({
-    id: 1,
-    text: '一单元'
-});
 const showGrade = ref(false);
-const gradeList = [
-    { text: '一单元', id: 1 },
-    { text: '二单元', id: 2 },
-    { text: '三单元', id: 3 },
-    { text: '四单元', id: 4 },
-    { text: '五单元', id: 5 },
-    { text: '六单元', id: 6 },
-    { text: '七单元', id: 7 },
-    { text: '八单元', id: 8 }
-];
 
-const activeLevel = ref({
-    id: 1,
-    text: '简单'
-});
 const showLevel = ref(false);
-const levelList = [
-    { text: '简单', id: 1 },
-    { text: '中等', id: 2 },
-    { text: '困难', id: 3 }
-];
 
 const level_number = computed(() => {
     return store.state.levels;
 });
+const gradeList = computed(() => {
+    return store.state.gradeList;
+});
+const levelList = computed(() => {
+    return store.state.leveList;
+});
+
+const activeGrade = ref({
+    id: '',
+    name: ''
+});
+const activeLevel = ref({
+    id: '',
+    name: ''
+});
+
+watch(
+    () => store.state.gradeList,
+    value => {
+        activeGrade.value = value[0];
+    },
+    {
+        deep: true
+    }
+);
+watch(
+    () => store.state.leveList,
+    value => {
+        activeLevel.value = value[0];
+    },
+    {
+        deep: true
+    }
+);
+
 const visible = ref(false);
 
 const getLevelId = id => {
@@ -143,6 +155,8 @@ const init = () => {
     visible.value = true;
     const member_id = store.state.user.id;
     store.getLevelList(member_id);
+    store.getManageInfo('grade');
+    store.getManageInfo('difficulty');
 };
 
 defineExpose({ init });

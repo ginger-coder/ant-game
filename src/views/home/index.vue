@@ -24,7 +24,7 @@
             </div>
             <div class="home-game-box">
                 <van-swipe :show-indicators="false" width="375">
-                    <van-swipe-item v-for="item in game_list" :key="item.id">
+                    <van-swipe-item v-for="item in store.state.gameList" :key="item.id">
                         <div class="game-item">
                             <div class="game-title">
                                 {{ item.name }}
@@ -77,6 +77,7 @@ const game_list = computed(() => {
 
 const init = () => {
     store.setUserInfo(userInfo.value.id);
+    store.getManageInfo('gametype');
 };
 
 /**
