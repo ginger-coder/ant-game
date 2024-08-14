@@ -285,7 +285,6 @@ const gameInfo = data => {
             tolerance.value = res.data.tolerance;
             chineseList.value = res.data.characters
                 ? res.data.characters.map(item => {
-                      item.active = false;
                       item.uid = uuidv4();
                       return item;
                   })

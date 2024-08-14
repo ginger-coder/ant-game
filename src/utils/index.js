@@ -352,22 +352,18 @@ const shuffleArray = array => {
 
 export const dynamicChunkArrayWithMaxSize = data => {
     const shuffledData = shuffleArray([...data]);
-    // 动态计算目标子数组的数量
-    const totalElements = shuffledData.length;
-    const numberOfSubArrays = Math.ceil(Math.sqrt(totalElements));
+    // 计算需要的行数和列数
+    const size = Math.ceil(Math.sqrt(shuffledData.length));
 
-    // 计算每个子数组的基础大小和剩余元素
-    const baseSize = Math.floor(totalElements / numberOfSubArrays);
-    const remainder = totalElements % numberOfSubArrays;
-
+    // 创建二维数组
     const result = [];
-    let index = 0;
-
-    // 分割数组
-    for (let i = 0; i < numberOfSubArrays; i++) {
-        const currentSubArraySize = baseSize + (i < remainder ? 1 : 0);
-        result.push(shuffledData.slice(index, index + currentSubArraySize));
-        index += currentSubArraySize;
+    for (let i = 0; i < size; i++) {
+        const row = [];
+        for (let j = 0; j < size; j++) {
+            const index = i * size + j;
+            row.push(index < shuffledData.length ? shuffledData[index] : null);
+        }
+        result.push(row);
     }
 
     return result;

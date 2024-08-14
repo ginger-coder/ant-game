@@ -24,7 +24,12 @@
                     <div
                         v-if="cell"
                         class="game-chinese-item-c animate__animated"
-                        :class="{ active: cell.active, animate__headShake: isErrorId == cell.uid }"
+                        :class="{
+                            active: cell.active,
+                            animate__headShake: isErrorId == cell.uid,
+                            animate__bounceOut:
+                                cell.uid == removeId.first?.uid || cell.uid == removeId.second?.uid
+                        }"
                         @click="() => handleChineseItemClick(x, y)"
                     >
                         {{ cell.name }}
@@ -67,6 +72,11 @@ const refreshNum = ref(0);
 
 const isErrorId = ref(null);
 
+const removeId = ref({
+    first: null,
+    second: null
+});
+
 watch(
     () => props.refresh,
     value => {
@@ -83,6 +93,7 @@ const handleRefresh = () => {
         return;
     }
     refreshNum.value = refreshNum.value - 1;
+    clearAllActive();
     proxy.$showToast('刷新机会还有' + refreshNum.value + '次哦~');
     board.value = shuffleMatrix(board.value);
 };
@@ -94,12 +105,20 @@ const other = () => {
 };
 
 const renderBoard = data => {
-    board.value = dynamicChunkArrayWithMaxSize(data, size);
+    board.value = dynamicChunkArrayWithMaxSize(data);
+    console.log(board.value);
 };
 watch(
     () => props.data,
     data => {
-        renderBoard(data);
+        const newList = data.map(el => {
+            return {
+                ...el,
+                active: false,
+                pear: false
+            };
+        });
+        renderBoard(newList);
     },
     {
         immediate: true
@@ -134,8 +153,6 @@ const drawLine = path => {
 
     ctx.stroke();
 };
-
-const size = 6;
 
 let firstClick = null;
 let secondClick = null;
@@ -174,8 +191,19 @@ const handleChineseItemClick = (x, y) => {
                 // drawLine(pathList);
                 emits('success', board.value[firstClick.x][firstClick.y]);
 
-                board.value[firstClick.x][firstClick.y] = null;
-                board.value[secondClick.x][secondClick.y] = null;
+                removeId.value = {
+                    first: board.value[firstClick.x][firstClick.y],
+                    second: board.value[secondClick.x][secondClick.y]
+                };
+
+                // 移除 两个方块
+                (function (start_x, start_y, end_x, end_y) {
+                    setTimeout(function () {
+                        board.value[start_x][start_y] = null;
+                        board.value[end_x][end_y] = null;
+                        removeId.value = { first: null, second: null };
+                    }, 500);
+                })(firstClick.x, firstClick.y, secondClick.x, secondClick.y);
                 other();
                 // Check if the game is over
                 if (isGameOver(board.value)) {
@@ -380,6 +408,27 @@ const isGameOver = board => {
 };
 </script>
 <style scoped lang="scss">
+//爆炸效果
+@keyframes fireworks {
+    0% {
+        transform: scale(0, 0);
+    }
+    60% {
+        transform: scale(1, 1);
+        opacity: 1;
+    }
+    95% {
+        transform: scale(0.9, 0.9);
+    }
+    100% {
+        transform: scale(0.9, 0.9);
+        opacity: 0;
+    }
+}
+.disappear {
+    animation: fireworks 2s 0.5s linear;
+}
+
 .game-content {
     position: relative;
     padding: 10px 0;
