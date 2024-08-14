@@ -72,7 +72,8 @@ const userInfo = computed(() => {
 });
 
 const init = () => {
-    store.setUserInfo(userInfo.value.id);
+    const user = getUserInfo();
+    store.setUserInfo(user.id);
     store.getManageInfo('gametype');
 };
 
