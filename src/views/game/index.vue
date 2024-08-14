@@ -16,8 +16,10 @@
                     <span v-if="tipInfo.time_limit == 0" class="t">无限制</span>
                     <van-count-down
                         v-else
+                        ref="countDown"
                         :time="countDownTimer"
                         style="color: #fdbb27; font-weight: 800"
+                        :auto-start="false"
                         format="mm:ss"
                         @finish="onGameTimeEnd"
                         @change="onTimeChange"
@@ -34,7 +36,7 @@
                     剩余数量：<span>{{ otherNum.length }}</span>
                 </div>
                 <div class="game-tip-item">
-                    错误数量：<span>{{ errorNum.length }}</span>
+                    错误数量：<span>{{ canErrorNumber }}</span>
                 </div>
             </div>
         </div>
@@ -70,7 +72,7 @@
                 <!-- <div class="game-content-desc">选择偏旁和部首组成一个汉字</div> -->
                 <line-game
                     :data="chineseList"
-                    :refresh="tolerance"
+                    :refresh="tipInfo.refresh_count"
                     @error="handleErrorClick"
                     @other="handleOther"
                     @finish="handleFinish"
@@ -97,8 +99,6 @@ import api from '@/api';
 import { v4 as uuidv4 } from 'uuid';
 import { uniqueJsonArrByField } from '@/utils';
 const { proxy } = getCurrentInstance();
-import cnchar from 'cnchar';
-import 'cnchar-radical';
 
 defineProps({});
 /**
@@ -128,32 +128,19 @@ const tipInfo = ref({
     grade_name: '',
     level_name: '',
     time_limit: 0,
-    tolerance: 0
+    tolerance: 0,
+    refresh_count: 0
 });
 const chineseList = ref([]);
-const selectChinese = ref([]);
-
-const rightNum = ref([]);
 const errorNum = ref([]);
 const otherNum = ref([]);
-
-let startTime = 0;
-let timing = null;
+const startTime = ref(0);
 
 const audioRef = ref();
 const handlePalyAudio = url => {
     audioRef.value.src = url;
     // 播放 暂停也同理
     audioRef.value.play();
-};
-
-const startTiming = () => {
-    timing = setInterval(() => {
-        startTime++;
-    }, 1000);
-};
-const finishTiming = () => {
-    clearInterval(timing);
 };
 
 let passTimer = null;
@@ -184,14 +171,32 @@ const handleNext = () => {
 
 const handleErrorClick = item => {
     errorNum.value.push(item);
+    console.log('errorNum.value', errorNum.value);
 };
 
-const handleFinish = () => {
-    finishTiming();
-    gamePassDialogRef.value.init();
-    if (!route.query.workbook) {
-        submitGameData(1);
+const canErrorNumber = computed(() => {
+    if (tipInfo.value.tolerance === 0) {
+        return '不限';
     }
+    return tipInfo.value.tolerance - errorNum.value.length < 0
+        ? 0
+        : tipInfo.value.tolerance - errorNum.value.length;
+});
+
+watch(
+    () => tipInfo.value.tolerance - errorNum.value.length,
+    value => {
+        if (tipInfo.value.tolerance !== 0 && value < 0) {
+            proxy.$showToast('已闯关失败，请重新开始');
+            isFinish.value = false;
+            onGameTimeEnd();
+        }
+    }
+);
+
+const handleFinish = () => {
+    isFinish.value = true;
+    onGameTimeEnd();
 };
 
 const submitGameData = type => {
@@ -206,20 +211,21 @@ const submitGameData = type => {
         }),
         'id'
     );
+    const errorArr = uniqueJsonArrByField(errorNum.value, 'id');
     api.handelLevelSubmit({
         member_id: userInfo.value.id,
         level_id: Number(levelData.value.level_id),
         grade_id: Number(levelData.value.grade_id),
         difficulty_id: Number(levelData.value.difficulty_id),
-        duration: type ? startTime : '',
-        false_num: errorNum.value.length,
+        duration: type ? startTime.value : '',
+        false_num: errorArr.length,
         true_num: rightArr.length,
         status: type ? 1 : 2,
         true_character: rightArr.map(el => el.id).join(','),
-        false_character: errorNum.value.map(el => el.id).join(',')
+        false_character: errorArr.map(el => el.id).join(',')
     }).then(() => {
         // 清空计时--0秒
-        startTime = 0;
+        startTime.value = 0;
     });
 };
 
@@ -230,6 +236,7 @@ const countDownTimer = computed(() => {
 const onTimeChange = val => {
     const remain = countDownTimer.value - val.total;
     remainderTime.value = (remain / countDownTimer.value) * 100;
+    startTime.value++;
 };
 
 const chineseItemInfo = ref({});
@@ -257,7 +264,7 @@ const startShowChineseInfo = chinese => {
 
 const onGameTimeEnd = () => {
     // 游戏结束
-    finishTiming();
+    resetGameTimer();
     if (!isFinish.value) {
         gameOverDialogRef.value.init();
         if (!route.query.workbook) {
@@ -271,8 +278,6 @@ const onGameTimeEnd = () => {
     }
 };
 
-const tolerance = ref(0);
-
 const gameInfo = data => {
     api.getLevelInfo({
         memberid: userInfo.value.id,
@@ -282,7 +287,6 @@ const gameInfo = data => {
     }).then(res => {
         if (res.data.characters.length) {
             start();
-            tolerance.value = res.data.tolerance;
             chineseList.value = res.data.characters
                 ? res.data.characters.map(item => {
                       item.uid = uuidv4();
@@ -346,16 +350,32 @@ watch(
     }
 );
 
+const resetGameTimer = () => {
+    pauseCountDown();
+    startTime.value = 0;
+};
+
 const onWaitTimeEnd = () => {
     isWaitGame.value = false;
-    startTiming();
-    console.log('倒计时结束');
+    startCountDown();
+    console.log('游戏准备倒计时结束');
+};
+const countDown = ref(null);
+const startCountDown = () => {
+    countDown.value?.start();
+};
+const pauseCountDown = () => {
+    countDown.value?.pause();
+};
+const resetCountDown = () => {
+    countDown.value?.reset();
 };
 
 onDeactivated(() => {
     clearTimeout(chineseInfoTimer.value);
     clearTimeout(workTimer.value);
     clearTimeout(passTimer);
+    resetCountDown();
 });
 </script>
 <style scoped lang="scss">

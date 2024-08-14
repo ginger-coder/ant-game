@@ -54,7 +54,7 @@ const start = () => {
                 router.replace('/home');
             }, 500);
         }
-    }, 100);
+    }, 60);
 };
 
 onDeactivated(() => {

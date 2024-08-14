@@ -18,7 +18,7 @@
                         <div class="user-name">
                             <van-text-ellipsis :content="userInfo.nickname" />
                         </div>
-                        <div class="user-data">识字数：56</div>
+                        <div class="user-data">识字数：{{ userInfo.learn_num }}</div>
                     </div>
                 </div>
             </div>
@@ -68,11 +68,7 @@ const router = useRouter();
 //console.log('1-开始创建组件-setup')
 
 const userInfo = computed(() => {
-    return getUserInfo();
-});
-
-const game_list = computed(() => {
-    return store.state.user.game_list || [];
+    return store.state.user;
 });
 
 const init = () => {

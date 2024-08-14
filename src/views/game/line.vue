@@ -5,7 +5,7 @@
 -->
 <template>
     <div class="game-content">
-        <div v-if="refreshNum > 0" class="reload" @click="handleRefresh">
+        <div class="reload" :class="{ disabled: refreshNum <= 0 }" @click="handleRefresh">
             <img src="@/assets/images/refresh.png" width="40" alt="" />
         </div>
         <div class="game-chinese-box" :style="{ width: 40 * board[0].length + 'px' }">
@@ -437,8 +437,11 @@ const isGameOver = board => {
     .reload {
         position: absolute;
         right: 10px;
-        top: -20px;
+        top: -40px;
         color: #af6400;
+        &.disabled {
+            filter: grayscale(100%);
+        }
     }
 }
 .game-chinese-box {
