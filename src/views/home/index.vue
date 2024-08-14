@@ -44,7 +44,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, computed, getCurrentInstance } from 'vue';
+import { ref, reactive, onMounted, computed, getCurrentInstance, watch, onDeactivated } from 'vue';
 import { useAppStore } from '@/store';
 import { useRoute, useRouter } from 'vue-router';
 import selectLevelDialog from './select-level-dialog.vue';
@@ -82,6 +82,21 @@ const init = () => {
  */
 const levelDialogRef = ref();
 
+let timer = ref();
+// watch(
+//     () => route.query,
+//     data => {
+//         console.log('route', data);
+
+//         if (data.from === 'game') {
+//             timer.value = setTimeout(() => {
+//                 levelDialogRef.value.init();
+//             }, 500);
+//         }
+//     },
+//     { immediate: true, deep: true }
+// );
+
 const handleSelectLevel = id => {
     if (id !== 1) {
         proxy.$showToast('游戏暂未开放');
@@ -94,6 +109,10 @@ const personalCenterRef = ref();
 const handleInfo = () => {
     personalCenterRef.value.init();
 };
+
+onDeactivated(() => {
+    clearTimeout(timer.value);
+});
 
 onMounted(() => {
     init();

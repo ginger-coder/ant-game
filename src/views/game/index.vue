@@ -146,26 +146,35 @@ const handlePalyAudio = url => {
 let passTimer = null;
 
 // 下一关
-const handleNext = () => {
-    const findLevelIndex = store.state.levels.findIndex(
-        item => item.id === Number(levelData.value.level_id)
-    );
-    const nextIndex = findLevelIndex + 1;
-    if (nextIndex < store.state.levels.length) {
-        const nextId = store.state.levels[nextIndex].id;
-        // 跳转下一关
-        passTimer = setTimeout(() => {
-            router.replace({
-                name: 'game',
-                query: {
-                    level_id: nextId,
-                    grade_id: levelData.value.grade_id,
-                    difficulty_id: levelData.value.difficulty_id
-                }
-            });
-        }, 500);
+const handleNext = type => {
+    if (type === 0) {
+        router.replace({
+            name: 'home',
+            query: {
+                from: 'game'
+            }
+        });
     } else {
-        proxy.$showToast('恭喜，小朋友你已经通关啦~');
+        const findLevelIndex = store.state.levels.findIndex(
+            item => item.id === Number(levelData.value.level_id)
+        );
+        const nextIndex = findLevelIndex + 1;
+        if (nextIndex < store.state.levels.length) {
+            const nextId = store.state.levels[nextIndex].id;
+            // 跳转下一关
+            passTimer = setTimeout(() => {
+                router.replace({
+                    name: 'game',
+                    query: {
+                        level_id: nextId,
+                        grade_id: levelData.value.grade_id,
+                        difficulty_id: levelData.value.difficulty_id
+                    }
+                });
+            }, 500);
+        } else {
+            proxy.$showToast('恭喜，小朋友你已经全部通关啦~');
+        }
     }
 };
 
@@ -174,23 +183,23 @@ const handleErrorClick = item => {
     console.log('errorNum.value', errorNum.value);
 };
 
-const canErrorNumber = computed(() => {
-    if (tipInfo.value.tolerance === 0) {
-        return '不限';
-    }
-    return tipInfo.value.tolerance - errorNum.value.length < 0
-        ? 0
-        : tipInfo.value.tolerance - errorNum.value.length;
-});
+const canErrorNumber = ref(0);
 
 watch(
-    () => tipInfo.value.tolerance - errorNum.value.length,
+    () => errorNum.value,
     value => {
-        if (tipInfo.value.tolerance !== 0 && value < 0) {
-            proxy.$showToast('已闯关失败，请重新开始');
-            isFinish.value = false;
-            onGameTimeEnd();
+        if (tipInfo.value.tolerance !== 0) {
+            if (tipInfo.value.tolerance < value.length) {
+                proxy.$showToast('已闯关失败，请重新开始');
+                isFinish.value = false;
+                onGameTimeEnd();
+            } else {
+                canErrorNumber.value = value.length;
+            }
         }
+    },
+    {
+        deep: true
     }
 );
 
