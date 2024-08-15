@@ -72,6 +72,8 @@ const refreshNum = ref(0);
 
 const isErrorId = ref(null);
 
+const borardSize = ref(8);
+
 const removeId = ref({
     first: null,
     second: null
@@ -105,7 +107,7 @@ const other = () => {
 };
 
 const renderBoard = data => {
-    board.value = dynamicChunkArrayWithMaxSize(data);
+    board.value = dynamicChunkArrayWithMaxSize(data, borardSize.value);
     console.log(board.value);
 };
 watch(

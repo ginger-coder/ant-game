@@ -183,7 +183,7 @@ const handleErrorClick = item => {
     console.log('errorNum.value', errorNum.value);
 };
 
-const canErrorNumber = ref(0);
+const canErrorNumber = ref('');
 
 watch(
     () => errorNum.value,
@@ -304,6 +304,9 @@ const gameInfo = data => {
                 : [];
             otherNum.value = _.cloneDeep(chineseList.value);
             tipInfo.value = res.data;
+            if (tipInfo.value.tolerance === 0) {
+                canErrorNumber.value = '无限制';
+            }
             if (res.data.time_limit === 0) {
                 remainderTime.value = 100;
             }

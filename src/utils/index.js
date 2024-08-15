@@ -342,6 +342,33 @@ export const getAssetsFile = url => {
     return new URL(`../assets/images/${url}`, import.meta.url).href;
 };
 
+function shuffleNonNullValues(matrix) {
+    // 提取所有非 null 的值
+    let values = [];
+    for (let i = 0; i < matrix.length; i++) {
+        for (let j = 0; j < matrix[i].length; j++) {
+            if (matrix[i][j] !== null) {
+                values.push(matrix[i][j]);
+            }
+        }
+    }
+
+    // 打乱这些值
+    values = shuffleArray(values);
+
+    // 将打乱的值放回原二维数组，保持 null 位置不变
+    let index = 0;
+    for (let i = 0; i < matrix.length; i++) {
+        for (let j = 0; j < matrix[i].length; j++) {
+            if (matrix[i][j] !== null) {
+                matrix[i][j] = values[index++];
+            }
+        }
+    }
+
+    return matrix;
+}
+
 const shuffleArray = array => {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -350,20 +377,25 @@ const shuffleArray = array => {
     return array;
 };
 
-export const dynamicChunkArrayWithMaxSize = data => {
+export const dynamicChunkArrayWithMaxSize = (data, size = 7) => {
     const shuffledData = shuffleArray([...data]);
     // 计算需要的行数和列数
-    const size = Math.ceil(Math.sqrt(shuffledData.length));
+    const result = Array.from({ length: size }, () => Array(size).fill(null));
 
-    // 创建二维数组
-    const result = [];
-    for (let i = 0; i < size; i++) {
-        const row = [];
-        for (let j = 0; j < size; j++) {
-            const index = i * size + j;
-            row.push(index < shuffledData.length ? shuffledData[index] : null);
+    // 计算最大正方形的边长
+    const squareSize = Math.floor(Math.sqrt(shuffledData.length));
+    const startX = Math.floor((size - squareSize) / 2);
+    const startY = startX; // 因为是正方形，startX == startY
+
+    // 将数组中的值填充到正中间的正方形区域
+    let index = 0;
+    for (let i = 0; i < squareSize; i++) {
+        for (let j = 0; j < squareSize; j++) {
+            if (index < shuffledData.length) {
+                result[startX + i][startY + j] = shuffledData[index];
+                index++;
+            }
         }
-        result.push(row);
     }
 
     return result;
