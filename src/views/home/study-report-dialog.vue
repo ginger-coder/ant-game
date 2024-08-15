@@ -12,12 +12,12 @@
     >
         <div class="report-container">
             <div class="user-info-card">
-                <div class="user-info-content">
-                    同学，恭喜您，您已经认识{{ userInfo.learn_num }}个汉字了
-                </div>
                 <div class="user-info-tip-content align-center justify-between">
                     <div class="user-info-tip">
-                        超过了 <span>{{ userInfo.exceed_num }}</span> 的同伴
+                        <div>同学，恭喜您，您已经认识<br />{{ userInfo.learn_num }}个汉字了</div>
+                        <div>
+                            超过了<span>{{ userInfo.exceed_num }}</span> 的同伴
+                        </div>
                     </div>
                     <div class="user-info-tip-icon">
                         <img src="@/assets/images/icon-user-tip.png" alt="" />
@@ -87,7 +87,7 @@ defineExpose({ init });
 .report-container {
     width: 100%;
     .user-info-card {
-        padding: 24px 22px;
+        padding: 16px 20px;
         background: #fcfbf5;
         box-shadow: inset -1px -1px 0px 0px #edc495;
         border-radius: 20px;
@@ -118,7 +118,7 @@ defineExpose({ init });
     }
     .user-game-card {
         width: 100%;
-        height: 480px;
+        // height: 480px;
         background: #fcfbf5;
         border-radius: 20px;
         border: 8px solid #af6400;
@@ -142,8 +142,8 @@ defineExpose({ init });
     }
 }
 .game-list-box {
-    height: calc(175px + 72px);
-    overflow-y: auto;
+    // height: calc(175px + 72px);
+    // overflow-y: auto;
     margin-bottom: 25px;
     .game-card-box {
         width: 72px;

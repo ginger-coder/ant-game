@@ -5,9 +5,6 @@
 -->
 <template>
     <div class="game-content">
-        <div class="reload" :class="{ disabled: refreshNum <= 0 }" @click="handleRefresh">
-            <img src="@/assets/images/refresh.png" width="40" alt="" />
-        </div>
         <div class="game-chinese-box" :style="{ width: 40 * board[0].length + 'px' }">
             <div
                 v-for="(row, x) in board"
@@ -36,6 +33,9 @@
                     </div>
                 </div>
             </div>
+        </div>
+        <div class="refresh-btn" :class="{ disabled: refreshNum <= 0 }" @click="handleRefresh">
+            <div class="refresh-num">{{ refreshNum }}</div>
         </div>
     </div>
 </template>
@@ -96,7 +96,7 @@ const handleRefresh = () => {
     }
     refreshNum.value = refreshNum.value - 1;
     clearAllActive();
-    proxy.$showToast('刷新机会还有' + refreshNum.value + '次哦~');
+    // proxy.$showToast('刷新机会还有' + refreshNum.value + '次哦~');
     board.value = shuffleMatrix(board.value);
 };
 
@@ -126,35 +126,6 @@ watch(
         immediate: true
     }
 );
-
-const linkCanvas = ref();
-
-const drawLine = path => {
-    const canvas = linkCanvas.value;
-    const ctx = canvas.getContext('2d');
-    if (!path || path.length < 3) return;
-
-    const blockSize = 40; // 假设每个块的尺寸是 50x50 像素
-    const offset = blockSize / 2; // 获取中心点偏移量
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height); // 每次绘制前清除之前的线条
-
-    ctx.beginPath();
-    ctx.strokeStyle = 'red'; // 设置线条颜色
-    ctx.lineWidth = 2; // 设置线条宽度
-
-    for (let i = 0; i < path.length - 1; i++) {
-        const startX = path[i].y * blockSize + offset;
-        const startY = path[i].x * blockSize + offset;
-        const endX = path[i + 1].y * blockSize + offset;
-        const endY = path[i + 1].x * blockSize + offset;
-
-        ctx.moveTo(startX, startY);
-        ctx.lineTo(endX, endY);
-    }
-
-    ctx.stroke();
-};
 
 let firstClick = null;
 let secondClick = null;
@@ -432,23 +403,18 @@ const isGameOver = board => {
 .disappear {
     animation: fireworks 2s 0.5s linear;
 }
-
-.game-content {
-    position: relative;
-    padding: 10px 0;
-    .reload {
-        position: absolute;
-        right: 10px;
-        top: -40px;
-        color: #af6400;
-        &.disabled {
-            filter: grayscale(100%);
-        }
-    }
+.disabled {
+    filter: grayscale(100%);
 }
 .game-chinese-box {
     margin: 0 auto;
     position: relative;
+    background: linear-gradient(180deg, #4a9719 0%, #2b7700 100%);
+    box-shadow:
+        0px 1px 0px 0px rgba(185, 231, 51, 0.3),
+        inset 0px 1px 2px 0px rgba(0, 0, 0, 0.35);
+    border-radius: 12px;
+    margin-bottom: 20px;
     .game-chinese-canvas {
         width: 100%;
         height: 100%;
@@ -485,6 +451,30 @@ const isGameOver = board => {
             color: #ffffff;
             -webkit-text-stroke: 1px #082350;
         }
+    }
+}
+
+.refresh-btn {
+    background: url('@/assets/images/refresh.png') no-repeat;
+    background-size: 100% 100%;
+    width: 76px;
+    height: 80px;
+    margin: 0 auto;
+    position: relative;
+    .refresh-num {
+        width: 22px;
+        height: 22px;
+        background: url('@/assets/images/refresh-num.png') no-repeat;
+        background-size: 100% 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: normal;
+        font-size: 12px;
+        color: #ffffff;
+        position: absolute;
+        right: 0;
+        top: 0;
     }
 }
 </style>

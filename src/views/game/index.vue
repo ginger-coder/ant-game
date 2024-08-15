@@ -135,6 +135,10 @@ const chineseList = ref([]);
 const errorNum = ref([]);
 const otherNum = ref([]);
 const startTime = ref(0);
+const canErrorNumber = ref(0);
+const remainderTime = ref(0);
+const chineseItemInfo = ref({});
+const isFinish = ref(false);
 
 const audioRef = ref();
 const handlePalyAudio = url => {
@@ -145,52 +149,17 @@ const handlePalyAudio = url => {
 
 let passTimer = null;
 
-// 下一关
-const handleNext = type => {
-    if (type === 0) {
-        router.replace({
-            name: 'home',
-            query: {
-                from: 'game'
-            }
-        });
-    } else {
-        const findLevelIndex = store.state.levels.findIndex(
-            item => item.id === Number(levelData.value.level_id)
-        );
-        const nextIndex = findLevelIndex + 1;
-        if (nextIndex < store.state.levels.length) {
-            const nextId = store.state.levels[nextIndex].id;
-            // 跳转下一关
-            passTimer = setTimeout(() => {
-                router.replace({
-                    name: 'game',
-                    query: {
-                        level_id: nextId,
-                        grade_id: levelData.value.grade_id,
-                        difficulty_id: levelData.value.difficulty_id
-                    }
-                });
-            }, 500);
-        } else {
-            proxy.$showToast('恭喜，小朋友你已经全部通关啦~');
-        }
-    }
-};
-
 const handleErrorClick = item => {
     errorNum.value.push(item);
     console.log('errorNum.value', errorNum.value);
 };
 
-const canErrorNumber = ref('');
-
 watch(
     () => errorNum.value,
     value => {
-        if (tipInfo.value.tolerance !== 0) {
+        if (tipInfo.value.tolerance > 0) {
             if (tipInfo.value.tolerance < value.length) {
-                proxy.$showToast('已闯关失败，请重新开始');
+                console.log('已闯关失败，请重新开始');
                 isFinish.value = false;
                 onGameTimeEnd();
             } else {
@@ -199,7 +168,8 @@ watch(
         }
     },
     {
-        deep: true
+        deep: true,
+        immediate: true
     }
 );
 
@@ -238,7 +208,6 @@ const submitGameData = type => {
     });
 };
 
-const remainderTime = ref(0);
 const countDownTimer = computed(() => {
     return tipInfo.value.time_limit * 1000 * 60;
 });
@@ -248,15 +217,8 @@ const onTimeChange = val => {
     startTime.value++;
 };
 
-const chineseItemInfo = ref({});
-
-const isFinish = ref(false);
-
 const handleOther = arr => {
     otherNum.value = _.cloneDeep(arr);
-};
-const start = () => {
-    gameWaitRef.value && gameWaitRef.value.start();
 };
 
 const chineseInfoTimer = ref(null);
@@ -287,7 +249,17 @@ const onGameTimeEnd = () => {
     }
 };
 
+let processTimer = ref();
+const showProcessStart = () => {
+    isWaitGame.value = true;
+    processTimer.value = setTimeout(() => {
+        gameWaitRef.value && gameWaitRef.value.start();
+        clearTimeout(processTimer.value);
+    }, 500);
+};
+
 const gameInfo = data => {
+    showProcessStart();
     api.getLevelInfo({
         memberid: userInfo.value.id,
         level_id: data.level_id,
@@ -295,7 +267,6 @@ const gameInfo = data => {
         difficulty_id: data.difficulty_id
     }).then(res => {
         if (res.data.characters.length) {
-            start();
             chineseList.value = res.data.characters
                 ? res.data.characters.map(item => {
                       item.uid = uuidv4();
@@ -321,6 +292,7 @@ const workTimer = ref();
 
 const workInfo = data => {
     remainderTime.value = 100;
+    showProcessStart();
     api.getWrongBookList({
         characters_ids: data.workbook || ''
     }).then(res => {
@@ -331,9 +303,6 @@ const workInfo = data => {
         });
         otherNum.value = _.cloneDeep(chineseList.value);
         tipInfo.value.level_name = '练习';
-        workTimer.value = setTimeout(() => {
-            start();
-        }, 500);
     });
 };
 
@@ -341,30 +310,35 @@ const userInfo = computed(() => {
     return getUserInfo();
 });
 
-watch(
-    () => route.query,
-    data => {
-        if (data.workbook) {
-            gameType.value = 0;
-            workInfo(data);
-        } else {
-            gameType.value = 1;
-            levelData.value = data;
-            gameInfo(data);
-            if (!store.state.levels.length) {
-                store.getLevelList(userInfo.value.id);
-            }
+const initGame = data => {
+    initConfig();
+    if (data.workbook) {
+        gameType.value = 0;
+        workInfo(data);
+    } else {
+        gameType.value = 1;
+        levelData.value = data;
+        gameInfo(data);
+        if (!store.state.levels.length) {
+            store.getLevelList(userInfo.value.id);
         }
-    },
-    {
-        immediate: true,
-        deep: true
     }
-);
+};
+
+const initConfig = () => {
+    chineseList.value = [];
+    errorNum.value = [];
+    otherNum.value = [];
+    startTime.value = 0;
+    canErrorNumber.value = 0;
+    remainderTime.value = 0;
+    isFinish.value = false;
+    tipInfo.value = {};
+    resetGameTimer();
+};
 
 const resetGameTimer = () => {
     pauseCountDown();
-    startTime.value = 0;
 };
 
 const onWaitTimeEnd = () => {
@@ -382,6 +356,45 @@ const pauseCountDown = () => {
 const resetCountDown = () => {
     countDown.value?.reset();
 };
+
+// 下一关
+const handleNext = type => {
+    if (type === 0) {
+        initGame(route.query);
+    } else {
+        const findLevelIndex = store.state.levels.findIndex(
+            item => item.id === Number(levelData.value.level_id)
+        );
+        const nextIndex = findLevelIndex + 1;
+        if (nextIndex < store.state.levels.length) {
+            const nextId = store.state.levels[nextIndex].id;
+            // 跳转下一关
+            passTimer = setTimeout(() => {
+                router.replace({
+                    name: 'game',
+                    query: {
+                        level_id: nextId,
+                        grade_id: levelData.value.grade_id,
+                        difficulty_id: levelData.value.difficulty_id
+                    }
+                });
+            }, 500);
+        } else {
+            proxy.$showToast('恭喜，小朋友你已经全部通关啦~');
+        }
+    }
+};
+
+watch(
+    () => route.query,
+    data => {
+        initGame(data);
+    },
+    {
+        immediate: true,
+        deep: true
+    }
+);
 
 onDeactivated(() => {
     clearTimeout(chineseInfoTimer.value);
