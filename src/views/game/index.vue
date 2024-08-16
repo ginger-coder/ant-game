@@ -5,9 +5,6 @@
 -->
 <template>
     <div class="container game-bg">
-        <div class="game-name">
-            <img src="@/assets/images/logo.png" width="116px" alt="" />
-        </div>
         <div class="game-info-card">
             <div class="game-info-title">
                 <div class="level-name align-center">{{ tipInfo.level_name }}</div>
@@ -73,6 +70,8 @@
                 <line-game
                     :data="chineseList"
                     :refresh="tipInfo.refresh_count"
+                    :row="tipInfo.across"
+                    :col="tipInfo.vertical"
                     @error="handleErrorClick"
                     @other="handleOther"
                     @finish="handleFinish"

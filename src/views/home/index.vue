@@ -7,9 +7,6 @@
     <div class="container index-bg">
         <div class="con-content">
             <div class="home-title">
-                <div class="game-name">
-                    <img src="@/assets/images/logo.png" width="116px" alt="" />
-                </div>
                 <div class="user-top" @click="handleInfo">
                     <div class="user-avager">
                         <img :src="userInfo.avatar" alt="" />
@@ -128,7 +125,9 @@ onMounted(() => {
         height: 100%;
     }
     .home-title {
-        padding: 0 18px;
+        padding: 15px 18px;
+        display: flex;
+        flex-direction: row-reverse;
         .game-name {
             margin-bottom: 15px;
             padding-top: 10px;

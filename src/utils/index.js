@@ -377,23 +377,24 @@ const shuffleArray = array => {
     return array;
 };
 
-export const dynamicChunkArrayWithMaxSize = (data, size = 7) => {
-    const shuffledData = shuffleArray([...data]);
-    // 计算需要的行数和列数
-    const result = Array.from({ length: size }, () => Array(size).fill(null));
+export const dynamicChunkArrayWithMaxSize = (array, rows, cols) => {
+    const data = shuffleArray(array);
+    // 计算二维数组的中心位置
+    const startX = Math.floor((rows - Math.ceil(Math.sqrt(data.length))) / 2);
+    const startY = Math.floor((cols - Math.ceil(Math.sqrt(data.length))) / 2);
 
-    // 计算最大正方形的边长
-    const squareSize = Math.floor(Math.sqrt(shuffledData.length));
-    const startX = Math.floor((size - squareSize) / 2);
-    const startY = startX; // 因为是正方形，startX == startY
+    // 初始化 rows x cols 的二维数组，填充 null
+    const result = Array.from({ length: rows }, () => Array(cols).fill(null));
 
-    // 将数组中的值填充到正中间的正方形区域
+    // 计算正方形的边长
+    const squareSize = Math.min(rows, cols);
     let index = 0;
+
+    // 从中心开始填充数据
     for (let i = 0; i < squareSize; i++) {
         for (let j = 0; j < squareSize; j++) {
-            if (index < shuffledData.length) {
-                result[startX + i][startY + j] = shuffledData[index];
-                index++;
+            if (index < data.length) {
+                result[startX + i][startY + j] = data[index++];
             }
         }
     }

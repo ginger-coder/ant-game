@@ -108,15 +108,15 @@ watch(
         deep: true
     }
 );
-watch(
-    () => store.state.leveList,
-    value => {
-        activeLevel.value = value[0];
-    },
-    {
-        deep: true
-    }
-);
+// watch(
+//     () => store.state.leveList,
+//     value => {
+//         activeLevel.value = value[0];
+//     },
+//     {
+//         deep: true
+//     }
+// );
 
 const visible = ref(false);
 
