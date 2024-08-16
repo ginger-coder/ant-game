@@ -156,7 +156,7 @@ const handleChineseItemClick = (x, y) => {
             board.value[firstClick.x][firstClick.y].uid !==
                 board.value[secondClick.x][secondClick.y].uid
         ) {
-            const isCanLink = findPath(board.value, firstClick, secondClick);
+            const isCanLink = canLink(board.value, firstClick, secondClick);
             if (isCanLink) {
                 // active
                 board.value[secondClick.x][secondClick.y].active = true;
@@ -195,7 +195,14 @@ const handleChineseItemClick = (x, y) => {
     }
 };
 
-function findPath(board, start, end) {
+/**
+ * 判断连连看游戏中的两个方块是否可以通过不超过两个直线（最多2个拐点）相连
+ * @param {Array<Array>} board - 游戏板的二维数组
+ * @param {Object} start - 起始方块的位置 {x, y}
+ * @param {Object} end - 目标方块的位置 {x, y}
+ * @return {boolean} - 是否可以匹配
+ */
+function canLink(board, start, end) {
     const rows = board.length;
     const cols = board[0].length;
 
@@ -220,7 +227,7 @@ function findPath(board, start, end) {
         const [current, lastDirection, turns, path] = queue.shift();
         const newPath = [...path, current];
 
-        if (turns > 2) continue; // 超过三次拐弯的路径不考虑
+        if (turns > 3) continue; // 超过两次拐弯的路径不考虑
         if (current.x === end.x && current.y === end.y) {
             return newPath; // 找到路径，返回路径数组
         }
@@ -247,133 +254,46 @@ function findPath(board, start, end) {
             }
         }
     }
-
-    return (
-        canConnectOnSameBoundary(board, start, end) ||
-        canConnectToBoundary(board, start, end) ||
-        canWrapAroundBoundary(board, start, end) ||
-        null
-    );
+    return canConnectOnSameBoundary(board, start, end);
 }
 
-function canConnectToBoundary(board, internal, external) {
-    const rows = board.length;
-    const cols = board[0].length;
-
-    // 检查上下边界
-    if (internal.x === 0 || internal.x === rows - 1) {
-        if (
-            noObstaclesInRow(
-                board,
-                internal.x,
-                Math.min(internal.y, external.y),
-                Math.max(internal.y, external.y)
-            )
-        ) {
-            return createBoundaryPath(internal, external, 'horizontal');
-        }
-    }
-    // 检查左右边界
-    if (internal.y === 0 || internal.y === cols - 1) {
-        if (
-            noObstaclesInColumn(
-                board,
-                internal.y,
-                Math.min(internal.x, external.x),
-                Math.max(internal.x, external.x)
-            )
-        ) {
-            return createBoundaryPath(internal, external, 'vertical');
-        }
-    }
-
-    return null; // 无法连线消除
-}
-
-function canWrapAroundBoundary(board, internal, external) {
-    const rows = board.length;
-    const cols = board[0].length;
-
-    const wrapAroundPaths = [];
-
-    // 上边界绕行
-    if (internal.x > 0 && noObstaclesInRow(board, 0, 0, cols - 1)) {
-        wrapAroundPaths.push([
-            { x: 0, y: internal.y },
-            { x: 0, y: external.y }
-        ]);
-    }
-    // 下边界绕行
-    if (internal.x < rows - 1 && noObstaclesInRow(board, rows - 1, 0, cols - 1)) {
-        wrapAroundPaths.push([
-            { x: rows - 1, y: internal.y },
-            { x: rows - 1, y: external.y }
-        ]);
-    }
-    // 左边界绕行
-    if (internal.y > 0 && noObstaclesInColumn(board, 0, 0, rows - 1)) {
-        wrapAroundPaths.push([
-            { x: internal.x, y: 0 },
-            { x: external.x, y: 0 }
-        ]);
-    }
-    // 右边界绕行
-    if (internal.y < cols - 1 && noObstaclesInColumn(board, cols - 1, 0, rows - 1)) {
-        wrapAroundPaths.push([
-            { x: internal.x, y: cols - 1 },
-            { x: external.x, y: cols - 1 }
-        ]);
-    }
-
-    for (const path of wrapAroundPaths) {
-        if (
-            noObstaclesInRow(
-                board,
-                path[0].x,
-                Math.min(path[0].y, path[1].y),
-                Math.max(path[0].y, path[1].y)
-            ) ||
-            noObstaclesInColumn(
-                board,
-                path[0].y,
-                Math.min(path[0].x, path[1].x),
-                Math.max(path[0].x, path[1].x)
-            )
-        ) {
-            return [
-                ...createBoundaryPath(internal, path[0], 'horizontal'),
-                ...createBoundaryPath(path[1], external, 'horizontal')
-            ];
-        }
-    }
-
-    return null; // 无法通过边界绕行连接
-}
-
-// 修正同一边界连线逻辑
 function canConnectOnSameBoundary(board, start, end) {
     const rows = board.length;
     const cols = board[0].length;
 
+    // 如果在同一行（上边界或下边界）
     if (start.x === end.x) {
-        // 在同一行的情况下
-        if (
-            (start.x === 0 || start.x === rows - 1) &&
-            noObstaclesInRow(board, start.x, Math.min(start.y, end.y), Math.max(start.y, end.y))
-        ) {
-            return createBoundaryPath(start, end, 'horizontal');
+        if (start.x === 0 || start.x === rows - 1) {
+            // 上边界或下边界
+            if (
+                noObstaclesInRow(board, start.x, Math.min(start.y, end.y), Math.max(start.y, end.y))
+            ) {
+                return createBoundaryPath(start, end, 'horizontal');
+            } else if (noObstaclesAboveOrBelow(board, start.x, start.y, end.y)) {
+                return createExtendedBoundaryPath(board, start, end, 'horizontal');
+            }
         }
-    } else if (start.y === end.y) {
-        // 在同一列的情况下
-        if (
-            (start.y === 0 || start.y === cols - 1) &&
-            noObstaclesInColumn(board, start.y, Math.min(start.x, end.x), Math.max(start.x, end.x))
-        ) {
-            return createBoundaryPath(start, end, 'vertical');
+    }
+    // 如果在同一列（左边界或右边界）
+    else if (start.y === end.y) {
+        if (start.y === 0 || start.y === cols - 1) {
+            // 左边界或右边界
+            if (
+                noObstaclesInColumn(
+                    board,
+                    start.y,
+                    Math.min(start.x, end.x),
+                    Math.max(start.x, end.x)
+                )
+            ) {
+                return createBoundaryPath(start, end, 'vertical');
+            } else if (noObstaclesLeftOrRight(board, start.y, start.x, end.x)) {
+                return createExtendedBoundaryPath(board, start, end, 'vertical');
+            }
         }
     }
 
-    return null;
+    return null; // 无法连线消除
 }
 
 function createBoundaryPath(start, end, direction) {
@@ -397,9 +317,35 @@ function createBoundaryPath(start, end, direction) {
     return path;
 }
 
-function noObstaclesInRow(board, row, startCol, endCol) {
-    if (row < 0 || row >= board.length) return false;
+function createExtendedBoundaryPath(board, start, end, direction) {
+    const path = [];
+    const rows = board.length;
+    const cols = board[0].length;
+    if (direction === 'horizontal') {
+        // 向上或向下绕行
+        if (start.x === 0) {
+            path.push({ x: -1, y: start.y });
+            path.push({ x: -1, y: end.y });
+        } else if (start.x === rows - 1) {
+            path.push({ x: rows, y: start.y });
+            path.push({ x: rows, y: end.y });
+        }
+    } else {
+        // 向左或向右绕行
+        if (start.y === 0) {
+            path.push({ x: start.x, y: -1 });
+            path.push({ x: end.x, y: -1 });
+        } else if (start.y === cols - 1) {
+            path.push({ x: start.x, y: cols });
+            path.push({ x: end.x, y: cols });
+        }
+    }
 
+    path.push(end);
+    return path;
+}
+
+function noObstaclesInRow(board, row, startCol, endCol) {
     for (let col = startCol + 1; col < endCol; col++) {
         if (board[row][col] !== null) {
             return false;
@@ -409,8 +355,6 @@ function noObstaclesInRow(board, row, startCol, endCol) {
 }
 
 function noObstaclesInColumn(board, col, startRow, endRow) {
-    if (col < 0 || col >= board[0].length) return false;
-
     for (let row = startRow + 1; row < endRow; row++) {
         if (board[row][col] !== null) {
             return false;
@@ -418,6 +362,23 @@ function noObstaclesInColumn(board, col, startRow, endRow) {
     }
     return true;
 }
+
+function noObstaclesAboveOrBelow(board, row, startCol, endCol) {
+    const rows = board.length;
+    return (
+        (row === 0 && noObstaclesInRow(board, rows - 1, startCol, endCol)) ||
+        (row === rows - 1 && noObstaclesInRow(board, 0, startCol, endCol))
+    );
+}
+
+function noObstaclesLeftOrRight(board, col, startRow, endRow) {
+    const cols = board[0].length;
+    return (
+        (col === 0 && noObstaclesInColumn(board, cols - 1, startRow, endRow)) ||
+        (col === cols - 1 && noObstaclesInColumn(board, 0, startRow, endRow))
+    );
+}
+
 const isGameOver = board => {
     return board.every(row => row.every(cell => cell === null));
 };
