@@ -379,21 +379,23 @@ const shuffleArray = array => {
 
 export const dynamicChunkArrayWithMaxSize = (array, rows, cols) => {
     const data = shuffleArray(array);
-    // 计算二维数组的中心位置
-    const startX = Math.floor((rows - Math.ceil(Math.sqrt(data.length))) / 2);
-    const startY = Math.floor((cols - Math.ceil(Math.sqrt(data.length))) / 2);
+    const totalElements = data.length;
+
+    // 确定可以容纳数据的正方形的边长
+    const sideLength = Math.ceil(Math.sqrt(totalElements));
+
+    // 计算从哪个位置开始，以便将正方形居中放置在网格中
+    const startX = Math.floor((rows - sideLength) / 2);
+    const startY = Math.floor((cols - sideLength) / 2);
 
     // 初始化 rows x cols 的二维数组，填充 null
     const result = Array.from({ length: rows }, () => Array(cols).fill(null));
 
-    // 计算正方形的边长
-    const squareSize = Math.min(rows, cols);
     let index = 0;
-
-    // 从中心开始填充数据
-    for (let i = 0; i < squareSize; i++) {
-        for (let j = 0; j < squareSize; j++) {
-            if (index < data.length) {
+    // 填充中心正方形的元素
+    for (let i = 0; i < sideLength && startX + i < rows; i++) {
+        for (let j = 0; j < sideLength && startY + j < cols; j++) {
+            if (index < totalElements) {
                 result[startX + i][startY + j] = data[index++];
             }
         }

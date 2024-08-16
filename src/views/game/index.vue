@@ -302,6 +302,7 @@ const workInfo = data => {
         });
         otherNum.value = _.cloneDeep(chineseList.value);
         tipInfo.value.level_name = '练习';
+        tipInfo.value.time_limit = 0;
     });
 };
 
