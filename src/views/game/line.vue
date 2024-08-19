@@ -56,8 +56,8 @@ const props = defineProps({
 
 const emits = defineEmits(['error', 'finish', 'success', 'other']);
 
-// const row = 10;
-// const col = 10;
+const row = 10;
+const col = 9;
 /**
  * 仓库
  */
@@ -110,7 +110,7 @@ const other = () => {
 };
 
 const renderBoard = data => {
-    board.value = dynamicChunkArrayWithMaxSize(data, props.col, props.row);
+    board.value = dynamicChunkArrayWithMaxSize(data, col, row);
     console.log(board.value);
 };
 watch(
