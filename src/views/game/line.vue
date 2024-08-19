@@ -50,14 +50,14 @@ import { dynamicChunkArrayWithMaxSize, shuffleMatrix } from '@/utils';
 const props = defineProps({
     data: { type: Array, default: () => [] },
     refresh: { type: Number, default: 0 },
-    row: { type: Number, default: 8 },
-    col: { type: Number, default: 8 }
+    row: { type: Number, default: 10 },
+    col: { type: Number, default: 10 }
 });
 
 const emits = defineEmits(['error', 'finish', 'success', 'other']);
 
-const row = 10;
-const col = 10;
+// const row = 10;
+// const col = 10;
 /**
  * 仓库
  */
@@ -110,7 +110,7 @@ const other = () => {
 };
 
 const renderBoard = data => {
-    board.value = dynamicChunkArrayWithMaxSize(data, col, row);
+    board.value = dynamicChunkArrayWithMaxSize(data, props.col, props.row);
     console.log(board.value);
 };
 watch(
