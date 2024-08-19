@@ -5,17 +5,17 @@
 -->
 <template>
     <div class="game-content">
-        <div class="game-chinese-box" :style="{ width: 40 * board[0].length + 'px' }">
+        <div class="game-chinese-box" :style="{ width: 33 * board[0].length + 'px' }">
             <div
                 v-for="(row, x) in board"
                 :key="x"
                 class="game-chinese-row"
-                :style="{ width: 40 * row.length + 'px' }"
+                :style="{ width: 33 * row.length + 'px' }"
             >
                 <div
                     v-for="(cell, y) in row"
                     :key="y"
-                    :style="{ left: y * 40 + 'px' }"
+                    :style="{ left: y * 33 + 'px' }"
                     class="game-chinese-item"
                 >
                     <div
@@ -55,6 +55,9 @@ const props = defineProps({
 });
 
 const emits = defineEmits(['error', 'finish', 'success', 'other']);
+
+const row = 10;
+const col = 10;
 /**
  * 仓库
  */
@@ -107,7 +110,7 @@ const other = () => {
 };
 
 const renderBoard = data => {
-    board.value = dynamicChunkArrayWithMaxSize(data, props.col, props.row);
+    board.value = dynamicChunkArrayWithMaxSize(data, col, row);
     console.log(board.value);
 };
 watch(
@@ -413,9 +416,9 @@ const isGameOver = board => {
     background: linear-gradient(180deg, #4a9719 0%, #2b7700 100%);
     box-shadow:
         0px 1px 0px 0px rgba(185, 231, 51, 0.3),
-        inset 0px 1px 2px 0px rgba(0, 0, 0, 0.35);
+        inset 0px 1px 2px 0px rgba(0, 0, 0, 0.33);
     border-radius: 12px;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
     .game-chinese-canvas {
         width: 100%;
         height: 100%;
@@ -428,29 +431,30 @@ const isGameOver = board => {
     .game-chinese-row {
         position: relative;
         width: 100%;
-        height: 40px;
+        height: 33px;
         z-index: 1;
     }
     .game-chinese-item {
         position: absolute;
         top: 0;
-        width: 40px;
-        height: 40px;
+        width: 33px;
+        height: 33px;
     }
     .game-chinese-item-c {
         background: url('@/assets/images/select-cha-bg.png') no-repeat;
-        width: 40px;
-        height: 40px;
+        width: 33px;
+        height: 33px;
         background-size: 100% 100%;
         text-align: center;
-        line-height: 40px;
-        font-size: 26px;
+        line-height: 33px;
+        font-size: 23px;
+        font-weight: 330;
         color: #571f20;
         &.active {
             background: url('@/assets/images/select-cha-bg-active.png') no-repeat;
             background-size: 100% 100%;
             color: #ffffff;
-            -webkit-text-stroke: 1px #082350;
+            -webkit-text-stroke: 1px #082330;
         }
     }
 }
@@ -458,8 +462,8 @@ const isGameOver = board => {
 .refresh-btn {
     background: url('@/assets/images/refresh.png') no-repeat;
     background-size: 100% 100%;
-    width: 76px;
-    height: 80px;
+    width: 64px;
+    height: 68px;
     margin: 0 auto;
     position: relative;
     .refresh-num {

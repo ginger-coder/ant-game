@@ -8,9 +8,10 @@
         <div class="select-level-box">
             <div class="select-level-content">
                 <div class="level-grade-box">
-                    <div class="level-grade-icon m5">
+                    <!-- <div class="level-grade-icon m5">
                         <img src="@/assets/images/icon-point.png" alt="" />
-                    </div>
+                    </div> -->
+                    <span class="level-grade-text">识字范围：</span>
                     <van-popover
                         v-model:show="showGrade"
                         :actions="gradeList"
@@ -20,9 +21,9 @@
                             <div class="select-item m5">{{ activeGrade?.text }}</div>
                         </template>
                     </van-popover>
-                    <div class="level-grade-icon m5">
+                    <!-- <div class="level-grade-icon m5">
                         <img src="@/assets/images/icon-star.png" alt="" />
-                    </div>
+                    </div> -->
                     <van-popover
                         v-model:show="showLevel"
                         :actions="levelList"
@@ -108,15 +109,15 @@ watch(
         deep: true
     }
 );
-// watch(
-//     () => store.state.leveList,
-//     value => {
-//         activeLevel.value = value[0];
-//     },
-//     {
-//         deep: true
-//     }
-// );
+watch(
+    () => store.state.leveList,
+    value => {
+        activeLevel.value = value[0];
+    },
+    {
+        deep: true
+    }
+);
 
 const visible = ref(false);
 
@@ -197,6 +198,12 @@ defineExpose({ init });
         color: #b3571f;
         padding: 12px 0 15px;
     }
+}
+
+.level-grade-text {
+    font-weight: 600;
+    font-size: 13px;
+    color: #ffdbdb;
 }
 
 .select-item {
